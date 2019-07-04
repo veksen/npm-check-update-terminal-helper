@@ -9,6 +9,15 @@ interface Library {
 
 type PackageManager = "yarn" | "npm";
 
+const sampleInput = `babel-plugin-styled-components  ^1.10.2  →  ^1.10.6
+gatsby                          ^2.10.5  →  ^2.13.3
+gatsby-image                     ^2.2.3  →   ^2.2.4
+gatsby-plugin-manifest           ^2.2.0  →   ^2.2.1
+gatsby-plugin-offline            ^2.2.0  →   ^2.2.1
+gatsby-plugin-sharp              ^2.2.1  →   ^2.2.2
+gatsby-source-filesystem         ^2.1.1  →   ^2.1.2
+gatsby-transformer-sharp         ^2.2.0  →   ^2.2.1`;
+
 function App() {
   const [input, setInput] = useState("");
   const [packageManager, setPackageManager] = useState<PackageManager>("npm");
@@ -40,6 +49,8 @@ function App() {
       .map(library => bumpLibrary(library))
       .join("; ");
   }
+
+  const sampleOutput = parse(sampleInput);
 
   return (
     <div className="App">
@@ -73,10 +84,17 @@ function App() {
           value={input}
           onChange={handleOnChange}
           rows={10}
+          placeholder={sampleInput}
         />
 
         <label htmlFor="output">Output (paste this in your console)</label>
-        <textarea id="output" value={parse(input)} rows={10} readOnly />
+        <textarea
+          id="output"
+          value={parse(input)}
+          rows={10}
+          readOnly
+          placeholder={sampleOutput}
+        />
 
         <div className="see-on-github">
           <a
