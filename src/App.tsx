@@ -1,5 +1,6 @@
 import React, { ChangeEvent, useState } from "react";
 import "./App.css";
+import { ReactComponent as GitHub } from "./github.svg";
 
 interface Library {
   name: string;
@@ -76,6 +77,16 @@ function App() {
 
         <label htmlFor="output">Output (paste this in your console)</label>
         <textarea id="output" value={parse(input)} rows={10} readOnly />
+
+        <div className="see-on-github">
+          <a
+            href="https://github.com/veksen/npm-check-update-terminal-helper"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <GitHub /> <span className="text">Source on GitHub</span>
+          </a>
+        </div>
       </div>
     </div>
   );

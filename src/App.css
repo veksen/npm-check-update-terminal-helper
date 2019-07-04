@@ -56,3 +56,24 @@ code {
   background: #eee;
   border-radius: 3px;
 }
+
+.see-on-github a {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+.see-on-github a:hover {
+  opacity: 1;
+}
+
+.see-on-github svg {
+  margin-right: 8px;
+  width: 20px;
+}
+
+.see-on-github .text {
+  color: blue;
+  border-bottom: 2px solid blue;
+}
