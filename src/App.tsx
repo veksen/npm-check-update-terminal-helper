@@ -124,7 +124,7 @@ function App() {
           placeholder={sampleInput}
         />
 
-        <label htmlFor="output">Output (paste this in your console)</label>
+        <label htmlFor="output">Output (paste this in your terminal)</label>
         <textarea
           id="output"
           value={error || parse(input)}
