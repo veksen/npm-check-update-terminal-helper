@@ -53,6 +53,11 @@ textarea {
   width: 100%;
 }
 
+textarea.has-error {
+  border: 2px solid #f00;
+  color: #f00;
+}
+
 textarea::placeholder {
   color: #bbb;
 }

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useState, useEffect } from "react";
 import "./App.css";
 import { ReactComponent as GitHub } from "./github.svg";
 
@@ -20,10 +20,29 @@ gatsby-transformer-sharp         ^2.2.0  →   ^2.2.1`;
 
 function App() {
   const [input, setInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [packageManager, setPackageManager] = useState<PackageManager>("npm");
+
+  useEffect(() => {
+    if (!input.trim()) {
+      setError(null)
+    }
+  }, [input])
 
   function handleOnChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value);
+  }
+
+  function validateName(name: string): boolean {
+    return /[\w-]+/.test(name);
+  }
+
+  function validateVersion(version: string): boolean {
+    return /^\d+.\d+.\d+$/.test(version);
+  }
+
+  function validate ({ name, version }: Library): boolean {
+    return validateName(name) && validateVersion(version);
   }
 
   function parse(str: string) {
@@ -33,24 +52,42 @@ function App() {
 
     if (!str) return "";
 
-    return str
-      .split(/\n/)
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(
-        (line): Library => {
-          const [name, , , version] = line.split(/ +/);
-          return {
-            name,
-            version: version.replace(/\^/, "")
-          };
-        }
-      )
-      .map(library => bumpLibrary(library))
-      .join("; ");
-  }
+    let output = "";
 
-  const sampleOutput = parse(sampleInput);
+    try {
+      output = str
+        .split(/\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(
+          (line): Library => {
+            const [name, , , version] = line.split(/ +/);
+            return {
+              name,
+              version: version.replace(/\^/, "")
+            };
+          }
+        )
+        .map(library => {
+          if (!validate(library)) {
+            throw Error("invalid output");
+          }
+
+          return library;
+        })
+        .map(library => bumpLibrary(library))
+        .join("; ");
+
+      if (error) {
+        setError(null);
+      }
+    } catch (e) {
+      console.log(e);
+      setError("This doesn't look like a valid npx npm-check-updates output.");
+    }
+
+    return output;
+  }
 
   return (
     <div className="App">
@@ -90,10 +127,11 @@ function App() {
         <label htmlFor="output">Output (paste this in your console)</label>
         <textarea
           id="output"
-          value={parse(input)}
+          value={error || parse(input)}
           rows={10}
           readOnly
-          placeholder={sampleOutput}
+          className={error ? "has-error" : ""}
+          placeholder={!error ? parse(sampleInput) : undefined}
         />
 
         <div className="see-on-github">
