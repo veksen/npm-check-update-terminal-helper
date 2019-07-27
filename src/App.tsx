@@ -64,7 +64,7 @@ function App() {
             const [name, , , version] = line.split(/ +/);
             return {
               name,
-              version: version.replace(/\^/, "")
+              version: version.replace(/\^|~/, "")
             };
           }
         )
