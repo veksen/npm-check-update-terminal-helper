@@ -1,13 +1,13 @@
-import React, { ChangeEvent, useState, useEffect } from "react";
-import "./App.css";
-import { ReactComponent as GitHub } from "./github.svg";
+import React, { ChangeEvent, useState, useEffect } from "react"
+import "./App.css"
+import { ReactComponent as GitHub } from "./github.svg"
 
 interface Library {
-  name: string;
-  version: string;
+  name: string
+  version: string
 }
 
-type PackageManager = "yarn" | "npm";
+type PackageManager = "yarn" | "npm"
 
 const sampleInput = `babel-plugin-styled-components  ^1.10.2  →  ^1.10.6
 gatsby                          ^2.10.5  →  ^2.13.3
@@ -16,12 +16,12 @@ gatsby-plugin-manifest           ^2.2.0  →   ^2.2.1
 gatsby-plugin-offline            ^2.2.0  →   ^2.2.1
 gatsby-plugin-sharp              ^2.2.1  →   ^2.2.2
 gatsby-source-filesystem         ^2.1.1  →   ^2.1.2
-gatsby-transformer-sharp         ^2.2.0  →   ^2.2.1`;
+gatsby-transformer-sharp         ^2.2.0  →   ^2.2.1`
 
 function App() {
-  const [input, setInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [packageManager, setPackageManager] = useState<PackageManager>("npm");
+  const [input, setInput] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [packageManager, setPackageManager] = useState<PackageManager>("npm")
 
   useEffect(() => {
     if (!input.trim()) {
@@ -30,63 +30,63 @@ function App() {
   }, [input])
 
   function handleOnChange(e: ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value);
+    setInput(e.target.value)
   }
 
   function validateName(name: string): boolean {
-    return /[\w-]+/.test(name);
+    return /[\w-]+/.test(name)
   }
 
   function validateVersion(version: string): boolean {
-    return /^\d+.\d+.\d+$/.test(version);
+    return /^\d+.\d+.\d+$/.test(version)
   }
 
-  function validate ({ name, version }: Library): boolean {
-    return validateName(name) && validateVersion(version);
+  function validate({ name, version }: Library): boolean {
+    return validateName(name) && validateVersion(version)
   }
 
   function parse(str: string) {
-    const install = packageManager === "npm" ? "npm i" : "yarn";
+    const install = packageManager === "npm" ? "npm i" : "yarn"
     const bumpLibrary = ({ name, version }: Library): string =>
-      `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${version}"`;
+      `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${version}"`
 
-    if (!str) return "";
+    if (!str) return ""
 
-    let output = "";
+    let output = ""
 
     try {
       output = str
         .split(/\n/)
-        .map(line => line.trim())
+        .map((line) => line.trim())
         .filter(Boolean)
         .map(
           (line): Library => {
-            const [name, , , version] = line.split(/ +/);
+            const [name, , , version] = line.split(/ +/)
             return {
               name,
-              version: version.replace(/\^|~/, "")
-            };
+              version: version.replace(/\^|~/, ""),
+            }
           }
         )
-        .map(library => {
+        .map((library) => {
           if (!validate(library)) {
-            throw Error("invalid output");
+            throw Error("invalid output")
           }
 
-          return library;
+          return library
         })
-        .map(library => bumpLibrary(library))
-        .join("; ");
+        .map((library) => bumpLibrary(library))
+        .join("; ")
 
       if (error) {
-        setError(null);
+        setError(null)
       }
     } catch (e) {
-      console.log(e);
-      setError("This doesn't look like a valid npx npm-check-updates output.");
+      console.log(e)
+      setError("This doesn't look like a valid npx npm-check-updates output.")
     }
 
-    return output;
+    return output
   }
 
   return (
@@ -145,7 +145,7 @@ function App() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
