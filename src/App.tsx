@@ -95,6 +95,7 @@ function App() {
         <div className="inline-radios">
           <div className="inline-radio">
             <input
+              data-testid="radio-yarn"
               id="yarn"
               type="radio"
               checked={packageManager === "yarn"}
@@ -104,6 +105,7 @@ function App() {
           </div>
           <div className="inline-radio">
             <input
+              data-testid="radio-npm"
               id="npm"
               type="radio"
               checked={packageManager === "npm"}
@@ -117,6 +119,7 @@ function App() {
           Input (copy/paste from <code>npx npm-check-updates</code>)
         </label>
         <textarea
+          data-testid="input"
           id="input"
           value={input}
           onChange={handleOnChange}
@@ -126,6 +129,7 @@ function App() {
 
         <label htmlFor="output">Output (paste this in your terminal)</label>
         <textarea
+          data-testid="output"
           id="output"
           value={error || parse(input)}
           rows={10}
