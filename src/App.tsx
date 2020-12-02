@@ -38,7 +38,7 @@ function App() {
   }
 
   function validateVersion(version: string): boolean {
-    return /^\d+.\d+.\d+$/.test(version)
+    return /^\d+(.\d+)?(.\d+)?$/.test(version)
   }
 
   function validate({ name, version }: Library): boolean {
