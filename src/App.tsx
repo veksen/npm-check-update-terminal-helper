@@ -1,10 +1,11 @@
-import React, { ChangeEvent, useState, useEffect } from "react"
+import React, { ChangeEvent, useState, useEffect, useMemo } from "react"
+import { useLocalStorage } from "./useLocalStorage"
 import "./App.css"
 import { ReactComponent as GitHub } from "./github.svg"
-
 interface Library {
   name: string
-  version: string
+  from: string
+  to: string
 }
 
 type PackageManager = "yarn" | "npm"
@@ -22,6 +23,10 @@ function App() {
   const [input, setInput] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [packageManager, setPackageManager] = useState<PackageManager>("npm")
+  const [ignoredLibs, setIgnoredLibs] = useLocalStorage<string[]>(
+    "ignoredLibs",
+    []
+  )
 
   useEffect(() => {
     if (!input.trim()) {
@@ -41,18 +46,14 @@ function App() {
     return /^\d+(.\d+)?(.\d+)?$/.test(version)
   }
 
-  function validate({ name, version }: Library): boolean {
-    return validateName(name) && validateVersion(version)
+  function validate({ name, from, to }: Library): boolean {
+    return validateName(name) && validateVersion(from) && validateVersion(to)
   }
 
-  function parse(str: string) {
-    const install = packageManager === "npm" ? "npm i" : "yarn"
-    const bumpLibrary = ({ name, version }: Library): string =>
-      `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${version}"`
+  const parseLibraries = (str: string): Library[] => {
+    if (!str) return []
 
-    if (!str) return ""
-
-    let output = ""
+    let output: Library[] = []
 
     try {
       output = str
@@ -61,13 +62,17 @@ function App() {
         .filter(Boolean)
         .map(
           (line): Library => {
-            const [name, , , version] = line.split(/ +/)
+            const [name, versionFrom, , versionTo] = line.split(/ +/)
             return {
               name,
-              version: version.replace(/\^|~/, ""),
+              from: versionFrom.replace(/\^|~/, ""),
+              to: versionTo.replace(/\^|~/, ""),
             }
           }
         )
+        .filter((library) => {
+          return !ignoredLibs.includes(library.name)
+        })
         .map((library) => {
           if (!validate(library)) {
             throw Error("invalid output")
@@ -75,8 +80,6 @@ function App() {
 
           return library
         })
-        .map((library) => bumpLibrary(library))
-        .join("; ")
 
       if (error) {
         setError(null)
@@ -89,63 +92,130 @@ function App() {
     return output
   }
 
+  function generateOutput(str: string): string {
+    const install = packageManager === "npm" ? "npm i" : "yarn"
+    const bumpLibrary = ({ name, to }: Library): string =>
+      `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${to}"`
+
+    const libraries = parseLibraries(str)
+
+    return libraries.map((library) => bumpLibrary(library)).join("; ")
+  }
+
+  const libraries = useMemo(() => {
+    if (error || !input) {
+      return parseLibraries(sampleInput)
+    }
+    return parseLibraries(input)
+  }, [input])
+
+  function toggleIgnoreLibrary(libraryName: string): void {
+    if (ignoredLibs.includes(libraryName)) {
+      setIgnoredLibs(ignoredLibs.filter((lib) => lib !== libraryName))
+    } else {
+      setIgnoredLibs([...ignoredLibs, libraryName])
+    }
+  }
+
   return (
     <div className="App">
       <div className="container">
-        <div className="inline-radios">
-          <div className="inline-radio">
-            <input
-              data-testid="radio-yarn"
-              id="yarn"
-              type="radio"
-              checked={packageManager === "yarn"}
-              onChange={() => setPackageManager("yarn")}
-            />
-            <label htmlFor="yarn">Yarn</label>
-          </div>
-          <div className="inline-radio">
-            <input
-              data-testid="radio-npm"
-              id="npm"
-              type="radio"
-              checked={packageManager === "npm"}
-              onChange={() => setPackageManager("npm")}
-            />
-            <label htmlFor="npm">npm</label>
+        <div className="options">
+          <div className="settings-label">Settings</div>
+
+          <div className="section-title">Ignored libraries</div>
+          <div
+            className={`libraries ${!input ? "is-disabled" : ""}`}
+            data-testid="libraries"
+          >
+            {libraries.map((library) => {
+              return (
+                <label
+                  className="library"
+                  data-testid="library"
+                  key={library.name}
+                >
+                  <input
+                    type="checkbox"
+                    value={library.name}
+                    checked={!ignoredLibs.includes(library.name)}
+                    onChange={() => toggleIgnoreLibrary(library.name)}
+                  />
+                  <span>
+                    {library.name} {library.from} → {library.to}
+                  </span>
+                </label>
+              )
+            })}
           </div>
         </div>
 
-        <label htmlFor="input">
-          Input (copy/paste from <code>npx npm-check-updates</code>)
-        </label>
-        <textarea
-          data-testid="input"
-          id="input"
-          value={input}
-          onChange={handleOnChange}
-          rows={10}
-          placeholder={sampleInput}
-        />
+        <div className="input-output">
+          <div className="inline-radios">
+            <div className="inline-radio">
+              <input
+                data-testid="radio-yarn"
+                id="yarn"
+                type="radio"
+                checked={packageManager === "yarn"}
+                onChange={() => setPackageManager("yarn")}
+              />
+              <label htmlFor="yarn">Yarn</label>
+            </div>
+            <div className="inline-radio">
+              <input
+                data-testid="radio-npm"
+                id="npm"
+                type="radio"
+                checked={packageManager === "npm"}
+                onChange={() => setPackageManager("npm")}
+              />
+              <label htmlFor="npm">npm</label>
+            </div>
+          </div>
 
-        <label htmlFor="output">Output (paste this in your terminal)</label>
-        <textarea
-          data-testid="output"
-          id="output"
-          value={error || parse(input)}
-          rows={10}
-          readOnly
-          className={error ? "has-error" : ""}
-          placeholder={!error ? parse(sampleInput) : undefined}
-        />
+          <div className="input">
+            <label htmlFor="input">
+              Input
+              <br />
+              (copy/paste from <code>npx npm-check-updates</code>)
+            </label>
+            <textarea
+              data-testid="input"
+              id="input"
+              value={input}
+              onChange={handleOnChange}
+              rows={10}
+              placeholder={sampleInput}
+            />
+          </div>
 
-        <div className="see-on-github">
-          <a
-            href="https://github.com/veksen/npm-check-update-terminal-helper"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <GitHub /> <span className="text">Source on GitHub</span>
-          </a>
+          <div className="output">
+            <label htmlFor="output">
+              Output
+              <br />
+              (paste this in your terminal)
+            </label>
+            <textarea
+              data-testid="output"
+              id="output"
+              value={error || generateOutput(input)}
+              rows={10}
+              readOnly
+              className={error ? "has-error" : ""}
+              placeholder={!error ? generateOutput(sampleInput) : undefined}
+            />
+          </div>
+
+          <div className="see-on-github">
+            <a
+              href="https://github.com/veksen/npm-check-update-terminal-helper"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHub /> <span className="text">Source on GitHub</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

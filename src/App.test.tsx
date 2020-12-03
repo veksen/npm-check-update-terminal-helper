@@ -152,3 +152,155 @@ it("shows a message on an invalid input", () => {
   expect(input.value).toEqual(mock.invalid.input)
   expect(output.value).toEqual(mock.invalid.output.npm)
 })
+
+it("shows a list of libraries from the input", () => {
+  const { getByTestId, getAllByTestId, getByText } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+
+  userEvent.paste(input, mock.default.input)
+
+  expect(getAllByTestId("library")).toHaveLength(6)
+  expect(getByText("react 16.8.6 → 17.0.1")).toBeDefined()
+  expect(getByText("react-dom 16.8.6 → 17.0.1")).toBeDefined()
+  expect(getByText("react-scripts 3.0.1 → 4.0.1")).toBeDefined()
+  expect(getByText("typescript 3.5.3 → 4.1.2")).toBeDefined()
+  expect(getByText("@types/react 16.8.23 → 17.0.0")).toBeDefined()
+  expect(getByText("@types/react-dom 16.8.5 → 17.0.0")).toBeDefined()
+})
+
+it("makes it possible to enable/disable libraries", () => {
+  const { getByTestId, getAllByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+
+  userEvent.paste(input, mock.default.input)
+
+  const [
+    reactLib,
+    reactDomLib,
+    reactScriptsLib,
+    typescriptLib,
+    typesReactLib,
+    typesReactDomLib,
+  ] = getAllByTestId("library")
+
+  const getInput = (element: HTMLElement): HTMLInputElement =>
+    element.querySelector("input")!
+
+  expect(getInput(reactLib).checked).toBeTruthy()
+  expect(getInput(reactDomLib).checked).toBeTruthy()
+  expect(getInput(reactScriptsLib).checked).toBeTruthy()
+  expect(getInput(typescriptLib).checked).toBeTruthy()
+  expect(getInput(typesReactLib).checked).toBeTruthy()
+  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+
+  userEvent.click(reactDomLib)
+
+  expect(getInput(reactLib).checked).toBeTruthy()
+  expect(getInput(reactDomLib).checked).not.toBeTruthy()
+  expect(getInput(reactScriptsLib).checked).toBeTruthy()
+  expect(getInput(typescriptLib).checked).toBeTruthy()
+  expect(getInput(typesReactLib).checked).toBeTruthy()
+  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+
+  userEvent.click(typescriptLib)
+
+  expect(getInput(reactLib).checked).toBeTruthy()
+  expect(getInput(reactDomLib).checked).not.toBeTruthy()
+  expect(getInput(reactScriptsLib).checked).toBeTruthy()
+  expect(getInput(typescriptLib).checked).not.toBeTruthy()
+  expect(getInput(typesReactLib).checked).toBeTruthy()
+  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+
+  userEvent.click(typescriptLib)
+
+  expect(getInput(reactLib).checked).toBeTruthy()
+  expect(getInput(reactDomLib).checked).not.toBeTruthy()
+  expect(getInput(reactScriptsLib).checked).toBeTruthy()
+  expect(getInput(typescriptLib).checked).toBeTruthy()
+  expect(getInput(typesReactLib).checked).toBeTruthy()
+  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+})
+
+// TODO: test
+it.skip("restores disabled libraries from localstorage", () => {
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(() => null),
+    },
+    writable: true,
+  })
+
+  window.localStorage.setItem(
+    "ignoredLibs",
+    JSON.stringify(["react", "react-dom"])
+  )
+
+  const { getByTestId, getAllByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+
+  userEvent.paste(input, mock.default.input)
+
+  const [
+    reactLib,
+    reactDomLib,
+    reactScriptsLib,
+    typescriptLib,
+    typesReactLib,
+    typesReactDomLib,
+  ] = getAllByTestId("library")
+
+  const getInput = (element: HTMLElement): HTMLInputElement =>
+    element.querySelector("input")!
+
+  expect(getInput(reactLib).checked).not.toBeTruthy()
+  expect(getInput(reactDomLib).checked).not.toBeTruthy()
+  expect(getInput(reactScriptsLib).checked).toBeTruthy()
+  expect(getInput(typescriptLib).checked).toBeTruthy()
+  expect(getInput(typesReactLib).checked).toBeTruthy()
+  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+})
+
+it("saves disabled libraries to localstorage", () => {
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(() => null),
+    },
+    writable: true,
+  })
+
+  const { getByTestId, getAllByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+
+  userEvent.paste(input, mock.default.input)
+
+  const [
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _reactLib,
+    reactDomLib,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _reactScriptsLib,
+    typescriptLib,
+  ] = getAllByTestId("library")
+
+  userEvent.click(reactDomLib)
+
+  expect(window.localStorage.setItem).toHaveBeenCalledTimes(1)
+  expect(window.localStorage.setItem).toHaveBeenLastCalledWith(
+    "ignoredLibs",
+    JSON.stringify(["react-dom"])
+  )
+
+  userEvent.click(typescriptLib)
+
+  expect(window.localStorage.setItem).toHaveBeenCalledTimes(2)
+  expect(window.localStorage.setItem).toHaveBeenLastCalledWith(
+    "ignoredLibs",
+    JSON.stringify(["react-dom", "typescript"])
+  )
+})

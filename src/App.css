@@ -3,8 +3,9 @@
 }
 
 .container {
+  display: flex;
   box-sizing: border-box;
-  max-width: 600px;
+  max-width: 1100px;
   width: 100%;
   padding: 0 32px;
   margin: 0 auto;
@@ -12,7 +13,6 @@
 
 .inline-radios {
   display: flex;
-  margin-bottom: 16px;
 }
 
 .inline-radio {
@@ -36,6 +36,12 @@
 
 .inline-radio + .inline-radio {
   margin-left: 16px;
+}
+
+.inline-radios,
+.settings-label {
+  height: 26px;
+  margin-bottom: 16px;
 }
 
 label {
@@ -68,6 +74,67 @@ code {
   padding: 3px;
   background: #eee;
   border-radius: 3px;
+}
+
+.options {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.input-output {
+  width: 600px;
+  flex: 0 0 600px;
+  padding: 16px;
+}
+
+.input-output > * {
+  margin: 16px;
+}
+
+.input-output > :first-child {
+  margin-top: 0;
+}
+
+.input-output > :last-child {
+  margin-top: 0;
+}
+
+.input,
+.output {
+  display: flex;
+  flex-direction: column;
+}
+
+.input textarea,
+.output textarea {
+  flex: 1 0 auto;
+  resize: none;
+  margin: 0;
+}
+
+.libraries.is-disabled {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.section-title {
+  margin-bottom: 8px;
+}
+
+.library {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.library input {
+  margin-right: 4px;
+}
+
+.library + .library {
+  margin-top: 4px;
 }
 
 .see-on-github a {
