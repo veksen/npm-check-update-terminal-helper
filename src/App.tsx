@@ -107,6 +107,7 @@ function App() {
       return parseLibraries(sampleInput)
     }
     return parseLibraries(input)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input])
 
   function toggleIgnoreLibrary(libraryName: string): void {
