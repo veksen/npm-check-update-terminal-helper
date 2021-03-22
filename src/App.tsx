@@ -50,6 +50,10 @@ function App() {
     return validateName(name) && validateVersion(from) && validateVersion(to)
   }
 
+  const withoutIgnored = (library: Library): boolean => {
+    return !ignoredLibs.includes(library.name)
+  }
+
   const parseLibraries = (str: string): Library[] => {
     if (!str) return []
 
@@ -70,9 +74,6 @@ function App() {
             }
           }
         )
-        .filter((library) => {
-          return !ignoredLibs.includes(library.name)
-        })
         .map((library) => {
           if (!validate(library)) {
             throw Error("invalid output")
@@ -97,7 +98,7 @@ function App() {
     const bumpLibrary = ({ name, to }: Library): string =>
       `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${to}"`
 
-    const libraries = parseLibraries(str)
+    const libraries = parseLibraries(str).filter(withoutIgnored)
 
     return libraries.map((library) => bumpLibrary(library)).join("; ")
   }

@@ -223,20 +223,18 @@ it("makes it possible to enable/disable libraries", () => {
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 })
 
-// TODO: test
-it.skip("restores disabled libraries from localstorage", () => {
+it("restores disabled libraries from localstorage", () => {
+  const ignoredLibaries = ["react", "react-dom"]
+
   Object.defineProperty(window, "localStorage", {
     value: {
-      getItem: jest.fn(() => null),
+      getItem: jest.fn(() => JSON.stringify(ignoredLibaries)),
       setItem: jest.fn(() => null),
     },
     writable: true,
   })
 
-  window.localStorage.setItem(
-    "ignoredLibs",
-    JSON.stringify(["react", "react-dom"])
-  )
+  window.localStorage.setItem("ignoredLibs", JSON.stringify(ignoredLibaries))
 
   const { getByTestId, getAllByTestId } = render(<App />)
 
