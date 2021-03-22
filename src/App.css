@@ -123,6 +123,10 @@ code {
   margin-bottom: 8px;
 }
 
+.section-title ~ .section-title {
+  margin-top: 8px;
+}
+
 .library {
   display: flex;
   align-items: center;

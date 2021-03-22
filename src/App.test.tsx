@@ -17,6 +17,19 @@ const mock = {
     },
   },
 
+  withBumpLockfile: {
+    input: ` react              ^16.8.6  →  ^17.0.1
+    react-dom          ^16.8.6  →  ^17.0.1
+    react-scripts        3.0.1  →    4.0.1
+    typescript          ^3.5.3  →   ^4.1.2
+    @types/react      ^16.8.23  →  ^17.0.0
+    @types/react-dom   ^16.8.5  →  ^17.0.0`,
+    output: {
+      npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"; rm package-lock.json; npm i; git add -A; git commit -m "chore(deps): bump lockfile"`,
+      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; yarn; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"; rm yarn.lock; yarn; git add -A; git commit -m "chore(deps): bump lockfile"`,
+    },
+  },
+
   withMinor: {
     input: ` react              ^16.8.6  →  ^17.0.1
     react-dom          ^16.8.6  →  ^17.0.1
@@ -61,7 +74,17 @@ beforeEach(() => {
 
   Object.defineProperty(window, "localStorage", {
     value: {
-      getItem: jest.fn(() => null),
+      getItem: jest.fn((key) => {
+        if (key === "packageManager") {
+          return JSON.stringify("npm")
+        }
+        if (key === "bumpLockfile") {
+          return JSON.stringify(false)
+        }
+        if (key === "ignoredLibs") {
+          return JSON.stringify([])
+        }
+      }),
       setItem: jest.fn(() => null),
     },
     writable: true,
@@ -235,12 +258,41 @@ it("makes it possible to enable/disable libraries", () => {
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 })
 
+it("makes it possible to bump lockfile", () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const bumpLockfile = getByTestId("bump-lockfile") as HTMLLabelElement
+  const bumpLockfileCheckbox = getByTestId(
+    "bump-lockfile-checkbox"
+  ) as HTMLInputElement
+
+  bumpLockfile.click()
+  userEvent.paste(input, mock.withBumpLockfile.input)
+
+  expect(bumpLockfileCheckbox.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.withBumpLockfile.input)
+  expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
+})
+
 it("restores disabled libraries from localstorage", () => {
   const ignoredLibaries = ["react", "react-dom"]
 
   Object.defineProperty(window, "localStorage", {
     value: {
-      getItem: jest.fn(() => JSON.stringify(ignoredLibaries)),
+      getItem: jest.fn((key) => {
+        if (key === "packageManager") {
+          return JSON.stringify("npm")
+        }
+        if (key === "bumpLockfile") {
+          return JSON.stringify(false)
+        }
+        if (key === "ignoredLibs") {
+          return JSON.stringify(ignoredLibaries)
+        }
+      }),
       setItem: jest.fn(() => null),
     },
     writable: true,
@@ -318,13 +370,21 @@ it("saves disabled libraries to localstorage", () => {
 it("restores package manager from localstorage", () => {
   Object.defineProperty(window, "localStorage", {
     value: {
-      getItem: jest.fn(() => JSON.stringify("yarn")),
+      getItem: jest.fn((key) => {
+        if (key === "packageManager") {
+          return JSON.stringify("yarn")
+        }
+        if (key === "bumpLockfile") {
+          return JSON.stringify(false)
+        }
+        if (key === "ignoredLibs") {
+          return JSON.stringify([])
+        }
+      }),
       setItem: jest.fn(() => null),
     },
     writable: true,
   })
-
-  window.localStorage.setItem("packageManager", JSON.stringify("yarn"))
 
   const { getByTestId } = render(<App />)
 
@@ -338,4 +398,39 @@ it("restores package manager from localstorage", () => {
 
   expect(input.value).toEqual(mock.default.input)
   expect(output.value).toEqual(mock.default.output.yarn)
+})
+
+it("restores bump lockfile from localstorage", () => {
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: jest.fn((key) => {
+        if (key === "packageManager") {
+          return JSON.stringify("npm")
+        }
+        if (key === "bumpLockfile") {
+          return JSON.stringify(true)
+        }
+        if (key === "ignoredLibs") {
+          return JSON.stringify([])
+        }
+      }),
+      setItem: jest.fn(() => null),
+    },
+    writable: true,
+  })
+
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const bumpLockfileCheckbox = getByTestId(
+    "bump-lockfile-checkbox"
+  ) as HTMLInputElement
+
+  userEvent.paste(input, mock.withBumpLockfile.input)
+
+  expect(bumpLockfileCheckbox.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.withBumpLockfile.input)
+  expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
 })

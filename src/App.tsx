@@ -30,6 +30,10 @@ function App() {
     "ignoredLibs",
     []
   )
+  const [bumpLockfile, setBumpLockfile] = useLocalStorage<boolean>(
+    "bumpLockfile",
+    false
+  )
 
   useEffect(() => {
     if (!input.trim()) {
@@ -96,14 +100,29 @@ function App() {
     return output
   }
 
+  function bumpLockfileOutput() {
+    if (!bumpLockfile) {
+      return ""
+    }
+
+    const install = packageManager === "npm" ? "npm i" : "yarn"
+    const lockfile =
+      packageManager === "npm" ? "package-lock.json" : "yarn.lock"
+
+    return `rm ${lockfile}; ${install}; git add -A; git commit -m "chore(deps): bump lockfile"`
+  }
+
   function generateOutput(str: string): string {
     const install = packageManager === "npm" ? "npm i" : "yarn"
     const bumpLibrary = ({ name, to }: Library): string =>
       `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${to}"`
+    const bumpedLockfile = bumpLockfileOutput()
 
     const libraries = parseLibraries(str).filter(withoutIgnored)
 
-    return libraries.map((library) => bumpLibrary(library)).join("; ")
+    return [...libraries.map((library) => bumpLibrary(library)), bumpedLockfile]
+      .filter(Boolean)
+      .join("; ")
   }
 
   const libraries = useMemo(() => {
@@ -153,6 +172,25 @@ function App() {
               )
             })}
           </div>
+          <div
+            className="section-title"
+            title={`Will delete and force recreate your ${
+              packageManager === "npm" ? "package-lock.json" : "yarn.lock"
+            } file.`}
+            style={{ cursor: "help" }}
+          >
+            Bump lockfile [?]
+          </div>
+          <label data-testid="bump-lockfile">
+            <input
+              data-testid="bump-lockfile-checkbox"
+              type="checkbox"
+              value="bump-lockfile"
+              checked={bumpLockfile}
+              onChange={() => setBumpLockfile((prevValue) => !prevValue)}
+            />
+            <span>Bump</span>
+          </label>
         </div>
 
         <div className="input-output">
