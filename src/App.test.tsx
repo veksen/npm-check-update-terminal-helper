@@ -1,5 +1,5 @@
 import React from "react"
-import { render } from "@testing-library/react"
+import { cleanup, render } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import App from "./App"
 
@@ -55,6 +55,18 @@ const mock = {
     },
   },
 }
+
+beforeEach(() => {
+  cleanup()
+
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: jest.fn(() => null),
+      setItem: jest.fn(() => null),
+    },
+    writable: true,
+  })
+})
 
 it("shows empty inputs", () => {
   const { getByTestId } = render(<App />)
@@ -301,4 +313,29 @@ it("saves disabled libraries to localstorage", () => {
     "ignoredLibs",
     JSON.stringify(["react-dom", "typescript"])
   )
+})
+
+it("restores package manager from localstorage", () => {
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: jest.fn(() => JSON.stringify("yarn")),
+      setItem: jest.fn(() => null),
+    },
+    writable: true,
+  })
+
+  window.localStorage.setItem("packageManager", JSON.stringify("yarn"))
+
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
+
+  userEvent.paste(input, mock.default.input)
+
+  expect(yarnRadio.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.default.input)
+  expect(output.value).toEqual(mock.default.output.yarn)
 })

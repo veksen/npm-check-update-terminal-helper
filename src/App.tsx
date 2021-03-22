@@ -22,7 +22,10 @@ gatsby-transformer-sharp         ^2.2.0  →   ^2.2.1`
 function App() {
   const [input, setInput] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [packageManager, setPackageManager] = useState<PackageManager>("npm")
+  const [packageManager, setPackageManager] = useLocalStorage<PackageManager>(
+    "packageManager",
+    "npm"
+  )
   const [ignoredLibs, setIgnoredLibs] = useLocalStorage<string[]>(
     "ignoredLibs",
     []
