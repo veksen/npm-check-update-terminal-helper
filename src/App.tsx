@@ -1,6 +1,7 @@
 /// <reference types="vite-plugin-svgr/client" />
 
 import { ChangeEvent, useState, useEffect, useMemo } from "react"
+import cx from "clsx"
 import { useLocalStorage } from "./useLocalStorage"
 import "./App.css"
 import GitHub from "./github.svg?react"
@@ -182,7 +183,7 @@ function App() {
           >
             Bump lockfile [?]
           </div>
-          <label data-testid="bump-lockfile">
+          <label className="option" data-testid="bump-lockfile">
             <input
               data-testid="bump-lockfile-checkbox"
               type="checkbox"
@@ -230,6 +231,7 @@ function App() {
               value={input}
               onChange={handleOnChange}
               rows={10}
+              className="border-[1px] border-solid border-black p-2 font-mono"
               placeholder={sampleInput}
             />
           </div>
@@ -246,7 +248,12 @@ function App() {
               value={error || generateOutput(input)}
               rows={10}
               readOnly
-              className={error ? "has-error" : ""}
+              className={cx(
+                "border-[1px] border-solid border-black p-2 font-mono",
+                {
+                  error: "has-error",
+                }
+              )}
               placeholder={!error ? generateOutput(sampleInput) : undefined}
             />
           </div>
