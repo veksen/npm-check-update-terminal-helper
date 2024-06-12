@@ -3,6 +3,7 @@
 import { ChangeEvent, useState, useEffect, useMemo } from "react"
 import cx from "clsx"
 import Option from "./components/option"
+import Radio from "./components/radio"
 import { useLocalStorage } from "./useLocalStorage"
 import GitHub from "./github.svg?react"
 
@@ -158,21 +159,15 @@ function App() {
           >
             {libraries.map((library) => {
               return (
-                <label
-                  className="library flex cursor-pointer items-center gap-1"
-                  data-testid="library"
+                <Option
                   key={library.name}
+                  data-testid="library"
+                  value={library.name}
+                  checked={!ignoredLibs.includes(library.name)}
+                  onChange={() => toggleIgnoreLibrary(library.name)}
                 >
-                  <input
-                    type="checkbox"
-                    value={library.name}
-                    checked={!ignoredLibs.includes(library.name)}
-                    onChange={() => toggleIgnoreLibrary(library.name)}
-                  />
-                  <span>
-                    {library.name} {library.from} → {library.to}
-                  </span>
-                </label>
+                  {library.name} {library.from} → {library.to}
+                </Option>
               )
             })}
           </div>
@@ -184,55 +179,34 @@ function App() {
           >
             Bump lockfile [?]
           </div>
-          <label
-            className="option flex cursor-pointer items-center gap-1"
+          <Option
             data-testid="bump-lockfile"
+            value="bump-lockfile"
+            checked={bumpLockfile}
+            onChange={() => setBumpLockfile((prevValue) => !prevValue)}
           >
-            <input
-              data-testid="bump-lockfile-checkbox"
-              type="checkbox"
-              value="bump-lockfile"
-              checked={bumpLockfile}
-              onChange={() => setBumpLockfile((prevValue) => !prevValue)}
-            />
-            <span>Bump</span>
-          </label>
+            Bump
+          </Option>
         </div>
 
         <div className="input-output w-[600px] flex-[0_0_600px] gap-4 p-4">
           <div className="inline-radios mb-4 flex h-[26px] gap-4">
-            <div className="inline-radio flex">
-              <input
-                className="peer order-2 cursor-pointer"
-                data-testid="radio-yarn"
-                id="yarn"
-                type="radio"
-                checked={packageManager === "yarn"}
-                onChange={() => setPackageManager("yarn")}
-              />
-              <label
-                className="order-1 cursor-pointer pr-2 peer-checked:text-[blue]"
-                htmlFor="yarn"
-              >
-                Yarn
-              </label>
-            </div>
-            <div className="inline-radio flex">
-              <input
-                className="peer order-2 cursor-pointer"
-                data-testid="radio-npm"
-                id="npm"
-                type="radio"
-                checked={packageManager === "npm"}
-                onChange={() => setPackageManager("npm")}
-              />
-              <label
-                className="order-1 cursor-pointer pr-2 peer-checked:text-[blue]"
-                htmlFor="npm"
-              >
-                npm
-              </label>
-            </div>
+            <Radio
+              data-testid="radio-yarn"
+              id="yarn"
+              checked={packageManager === "yarn"}
+              onChange={() => setPackageManager("yarn")}
+            >
+              Yarn
+            </Radio>
+            <Radio
+              data-testid="radio-npm"
+              id="npm"
+              checked={packageManager === "npm"}
+              onChange={() => setPackageManager("npm")}
+            >
+              npm
+            </Radio>
           </div>
 
           <div className="input flex flex-col gap-2">
