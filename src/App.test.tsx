@@ -1,5 +1,5 @@
-import React from "react"
 import { cleanup, render } from "@testing-library/react"
+import { vi, it, beforeEach, expect, afterEach } from "vitest"
 import userEvent from "@testing-library/user-event"
 import App from "./App"
 
@@ -69,26 +69,17 @@ const mock = {
   },
 }
 
+const getItemSpy = vi.spyOn(localStorage, 'getItem')
+const setItemSpy = vi.spyOn(localStorage, 'setItem')
+
+afterEach(() => {
+  getItemSpy.mockClear()
+  setItemSpy.mockClear()
+  localStorage.clear()
+})
+
 beforeEach(() => {
   cleanup()
-
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      getItem: jest.fn((key) => {
-        if (key === "packageManager") {
-          return JSON.stringify("npm")
-        }
-        if (key === "bumpLockfile") {
-          return JSON.stringify(false)
-        }
-        if (key === "ignoredLibs") {
-          return JSON.stringify([])
-        }
-      }),
-      setItem: jest.fn(() => null),
-    },
-    writable: true,
-  })
 })
 
 it("shows empty inputs", () => {
@@ -101,19 +92,20 @@ it("shows empty inputs", () => {
   expect(output.value).toEqual("")
 })
 
-it("fills output (npm)", () => {
+it("fills output (npm)", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
   const output = getByTestId("output") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   expect(input.value).toEqual(mock.default.input)
   expect(output.value).toEqual(mock.default.output.npm)
 })
 
-it("fills output (yarn)", () => {
+it("fills output (yarn)", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
@@ -122,13 +114,14 @@ it("fills output (yarn)", () => {
 
   userEvent.click(yarnRadio)
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   expect(input.value).toEqual(mock.default.input)
   expect(output.value).toEqual(mock.default.output.yarn)
 })
 
-it("behaves correctly switching from yarn to npm", () => {
+it("behaves correctly switching from yarn to npm", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
@@ -136,64 +129,69 @@ it("behaves correctly switching from yarn to npm", () => {
   const npmRadio = getByTestId("radio-npm") as HTMLInputElement
   const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   expect(input.value).toEqual(mock.default.input)
   expect(output.value).toEqual(mock.default.output.npm)
 
-  userEvent.click(yarnRadio)
+  await userEvent.click(yarnRadio)
 
   expect(input.value).toEqual(mock.default.input)
   expect(output.value).toEqual(mock.default.output.yarn)
 
-  userEvent.click(npmRadio)
+  await userEvent.click(npmRadio)
 
   expect(input.value).toEqual(mock.default.input)
   expect(output.value).toEqual(mock.default.output.npm)
 })
 
-it("supports minor versions", () => {
+it("supports minor versions", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
   const output = getByTestId("output") as HTMLInputElement
 
-  userEvent.paste(input, mock.withMinor.input)
+  input.focus()
+  await userEvent.paste(mock.withMinor.input)
 
   expect(input.value).toEqual(mock.withMinor.input)
   expect(output.value).toEqual(mock.withMinor.output.npm)
 })
 
-it("supports major versions", () => {
+it("supports major versions", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
   const output = getByTestId("output") as HTMLInputElement
 
-  userEvent.paste(input, mock.withMajor.input)
+  input.focus()
+  await userEvent.paste(mock.withMajor.input)
 
   expect(input.value).toEqual(mock.withMajor.input)
   expect(output.value).toEqual(mock.withMajor.output.npm)
 })
 
-it("shows a message on an invalid input", () => {
+it("shows a message on an invalid input", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
   const output = getByTestId("output") as HTMLInputElement
 
-  userEvent.paste(input, mock.invalid.input)
+  input.focus()
+  await userEvent.paste(mock.invalid.input)
 
   expect(input.value).toEqual(mock.invalid.input)
   expect(output.value).toEqual(mock.invalid.output.npm)
 })
 
-it("shows a list of libraries from the input", () => {
+it("shows a list of libraries from the input", async () => {
   const { getByTestId, getAllByTestId, getByText } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   expect(getAllByTestId("library")).toHaveLength(6)
   expect(getByText("react 16.8.6 → 17.0.1")).toBeDefined()
@@ -204,12 +202,13 @@ it("shows a list of libraries from the input", () => {
   expect(getByText("@types/react-dom 16.8.5 → 17.0.0")).toBeDefined()
 })
 
-it("makes it possible to enable/disable libraries", () => {
+it("makes it possible to enable/disable libraries", async () => {
   const { getByTestId, getAllByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   const [
     reactLib,
@@ -230,7 +229,9 @@ it("makes it possible to enable/disable libraries", () => {
   expect(getInput(typesReactLib).checked).toBeTruthy()
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 
-  userEvent.click(reactDomLib)
+  // would prefer clicking label, but happy-dom has a bug causing it to fire twice
+  // https://github.com/capricorn86/happy-dom/issues/1410
+  await userEvent.click(getInput(reactDomLib))
 
   expect(getInput(reactLib).checked).toBeTruthy()
   expect(getInput(reactDomLib).checked).not.toBeTruthy()
@@ -239,7 +240,7 @@ it("makes it possible to enable/disable libraries", () => {
   expect(getInput(typesReactLib).checked).toBeTruthy()
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 
-  userEvent.click(typescriptLib)
+  await userEvent.click(getInput(typescriptLib))
 
   expect(getInput(reactLib).checked).toBeTruthy()
   expect(getInput(reactDomLib).checked).not.toBeTruthy()
@@ -248,7 +249,7 @@ it("makes it possible to enable/disable libraries", () => {
   expect(getInput(typesReactLib).checked).toBeTruthy()
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 
-  userEvent.click(typescriptLib)
+  await userEvent.click(getInput(typescriptLib))
 
   expect(getInput(reactLib).checked).toBeTruthy()
   expect(getInput(reactDomLib).checked).not.toBeTruthy()
@@ -258,7 +259,7 @@ it("makes it possible to enable/disable libraries", () => {
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 })
 
-it("makes it possible to bump lockfile", () => {
+it("makes it possible to bump lockfile", async () => {
   const { getByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
@@ -269,7 +270,8 @@ it("makes it possible to bump lockfile", () => {
   ) as HTMLInputElement
 
   bumpLockfile.click()
-  userEvent.paste(input, mock.withBumpLockfile.input)
+  input.focus()
+  await userEvent.paste(mock.withBumpLockfile.input)
 
   expect(bumpLockfileCheckbox.checked).toBeTruthy()
 
@@ -277,34 +279,17 @@ it("makes it possible to bump lockfile", () => {
   expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
 })
 
-it("restores disabled libraries from localstorage", () => {
+it("restores disabled libraries from localstorage", async () => {
   const ignoredLibaries = ["react", "react-dom"]
 
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      getItem: jest.fn((key) => {
-        if (key === "packageManager") {
-          return JSON.stringify("npm")
-        }
-        if (key === "bumpLockfile") {
-          return JSON.stringify(false)
-        }
-        if (key === "ignoredLibs") {
-          return JSON.stringify(ignoredLibaries)
-        }
-      }),
-      setItem: jest.fn(() => null),
-    },
-    writable: true,
-  })
-
-  window.localStorage.setItem("ignoredLibs", JSON.stringify(ignoredLibaries))
+  localStorage.setItem("ignoredLibs", JSON.stringify(ignoredLibaries))
 
   const { getByTestId, getAllByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   const [
     reactLib,
@@ -326,20 +311,13 @@ it("restores disabled libraries from localstorage", () => {
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 })
 
-it("saves disabled libraries to localstorage", () => {
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      getItem: jest.fn(() => null),
-      setItem: jest.fn(() => null),
-    },
-    writable: true,
-  })
-
+it("saves disabled libraries to localstorage", async () => {
   const { getByTestId, getAllByTestId } = render(<App />)
 
   const input = getByTestId("input") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   const [
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -350,41 +328,28 @@ it("saves disabled libraries to localstorage", () => {
     typescriptLib,
   ] = getAllByTestId("library")
 
-  userEvent.click(reactDomLib)
+  const getInput = (element: HTMLElement): HTMLInputElement =>
+    element.querySelector("input")!
 
-  expect(window.localStorage.setItem).toHaveBeenCalledTimes(1)
-  expect(window.localStorage.setItem).toHaveBeenLastCalledWith(
+  await userEvent.click(getInput(reactDomLib))
+
+  expect(setItemSpy).toHaveBeenCalledTimes(1)
+  expect(setItemSpy).toHaveBeenLastCalledWith(
     "ignoredLibs",
     JSON.stringify(["react-dom"])
   )
 
-  userEvent.click(typescriptLib)
+  await userEvent.click(getInput(typescriptLib))
 
-  expect(window.localStorage.setItem).toHaveBeenCalledTimes(2)
-  expect(window.localStorage.setItem).toHaveBeenLastCalledWith(
+  expect(setItemSpy).toHaveBeenCalledTimes(2)
+  expect(setItemSpy).toHaveBeenLastCalledWith(
     "ignoredLibs",
     JSON.stringify(["react-dom", "typescript"])
   )
 })
 
-it("restores package manager from localstorage", () => {
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      getItem: jest.fn((key) => {
-        if (key === "packageManager") {
-          return JSON.stringify("yarn")
-        }
-        if (key === "bumpLockfile") {
-          return JSON.stringify(false)
-        }
-        if (key === "ignoredLibs") {
-          return JSON.stringify([])
-        }
-      }),
-      setItem: jest.fn(() => null),
-    },
-    writable: true,
-  })
+it("restores package manager from localstorage", async () => {
+  localStorage.setItem("packageManager", JSON.stringify("yarn"))
 
   const { getByTestId } = render(<App />)
 
@@ -392,7 +357,8 @@ it("restores package manager from localstorage", () => {
   const output = getByTestId("output") as HTMLInputElement
   const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
 
-  userEvent.paste(input, mock.default.input)
+  input.focus()
+  await userEvent.paste(mock.default.input)
 
   expect(yarnRadio.checked).toBeTruthy()
 
@@ -400,24 +366,8 @@ it("restores package manager from localstorage", () => {
   expect(output.value).toEqual(mock.default.output.yarn)
 })
 
-it("restores bump lockfile from localstorage", () => {
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      getItem: jest.fn((key) => {
-        if (key === "packageManager") {
-          return JSON.stringify("npm")
-        }
-        if (key === "bumpLockfile") {
-          return JSON.stringify(true)
-        }
-        if (key === "ignoredLibs") {
-          return JSON.stringify([])
-        }
-      }),
-      setItem: jest.fn(() => null),
-    },
-    writable: true,
-  })
+it("restores bump lockfile from localstorage", async () => {
+  localStorage.setItem("bumpLockfile", JSON.stringify(true))
 
   const { getByTestId } = render(<App />)
 
@@ -427,7 +377,8 @@ it("restores bump lockfile from localstorage", () => {
     "bump-lockfile-checkbox"
   ) as HTMLInputElement
 
-  userEvent.paste(input, mock.withBumpLockfile.input)
+  input.focus()
+  await userEvent.paste(mock.withBumpLockfile.input)
 
   expect(bumpLockfileCheckbox.checked).toBeTruthy()
 

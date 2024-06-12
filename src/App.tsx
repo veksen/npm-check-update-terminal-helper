@@ -1,6 +1,6 @@
 /// <reference types="vite-plugin-svgr/client" />
 
-import React, { ChangeEvent, useState, useEffect, useMemo } from "react"
+import { ChangeEvent, useState, useEffect, useMemo } from "react"
 import { useLocalStorage } from "./useLocalStorage"
 import "./App.css"
 import GitHub from "./github.svg?react"
