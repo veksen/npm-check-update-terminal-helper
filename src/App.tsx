@@ -3,7 +3,6 @@
 import { ChangeEvent, useState, useEffect, useMemo } from "react"
 import cx from "clsx"
 import { useLocalStorage } from "./useLocalStorage"
-import "./App.css"
 import GitHub from "./github.svg?react"
 
 interface Library {
@@ -144,20 +143,22 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <div className="container">
-        <div className="options">
-          <div className="settings-label">Settings</div>
+    <div className="app mx-0 my-4">
+      <div className="container flex box-border max-w-[1100px] w-full mx-auto my-0 px-8 py-0">
+        <div className="options flex-[0_0_auto] flex flex-col p-4 gap-2">
+          <div className="settings-label h-[26px] mb-4">Settings</div>
 
           <div className="section-title">Ignored libraries</div>
           <div
-            className={`libraries ${!input ? "is-disabled" : ""}`}
+            className={cx("libraries gap-1", {
+              "pointer-events-none opacity-30": !input,
+            })}
             data-testid="libraries"
           >
             {libraries.map((library) => {
               return (
                 <label
-                  className="library"
+                  className="library flex items-center cursor-pointer gap-1"
                   data-testid="library"
                   key={library.name}
                 >
@@ -175,15 +176,17 @@ function App() {
             })}
           </div>
           <div
-            className="section-title"
+            className="section-title cursor-help"
             title={`Will delete and force recreate your ${
               packageManager === "npm" ? "package-lock.json" : "yarn.lock"
             } file.`}
-            style={{ cursor: "help" }}
           >
             Bump lockfile [?]
           </div>
-          <label className="option" data-testid="bump-lockfile">
+          <label
+            className="option flex items-center cursor-pointer gap-1"
+            data-testid="bump-lockfile"
+          >
             <input
               data-testid="bump-lockfile-checkbox"
               type="checkbox"
@@ -195,35 +198,51 @@ function App() {
           </label>
         </div>
 
-        <div className="input-output">
-          <div className="inline-radios">
-            <div className="inline-radio">
+        <div className="input-output w-[600px] flex-[0_0_600px] p-4 gap-4">
+          <div className="inline-radios flex gap-4 h-[26px] mb-4">
+            <div className="inline-radio flex">
               <input
+                className="peer order-2 cursor-pointer"
                 data-testid="radio-yarn"
                 id="yarn"
                 type="radio"
                 checked={packageManager === "yarn"}
                 onChange={() => setPackageManager("yarn")}
               />
-              <label htmlFor="yarn">Yarn</label>
+              <label
+                className="order-1 cursor-pointer pr-2 peer-checked:text-[blue]"
+                htmlFor="yarn"
+              >
+                Yarn
+              </label>
             </div>
-            <div className="inline-radio">
+            <div className="inline-radio flex">
               <input
+                className="peer order-2 cursor-pointer"
                 data-testid="radio-npm"
                 id="npm"
                 type="radio"
                 checked={packageManager === "npm"}
                 onChange={() => setPackageManager("npm")}
               />
-              <label htmlFor="npm">npm</label>
+              <label
+                className="order-1 cursor-pointer pr-2 peer-checked:text-[blue]"
+                htmlFor="npm"
+              >
+                npm
+              </label>
             </div>
           </div>
 
-          <div className="input">
+          <div className="input flex flex-col gap-2">
             <label htmlFor="input">
               Input
               <br />
-              (copy/paste from <code>npx npm-check-updates</code>)
+              (copy/paste from{" "}
+              <code className="inline-block text-[90%] p-[3px] rounded-[3px] bg-[#eee]">
+                npx npm-check-updates
+              </code>
+              )
             </label>
             <textarea
               data-testid="input"
@@ -231,12 +250,12 @@ function App() {
               value={input}
               onChange={handleOnChange}
               rows={10}
-              className="border-[1px] border-solid border-black p-2 font-mono"
+              className="flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base placeholder:text-[#bbb]"
               placeholder={sampleInput}
             />
           </div>
 
-          <div className="output">
+          <div className="output flex flex-col gap-2">
             <label htmlFor="output">
               Output
               <br />
@@ -249,9 +268,9 @@ function App() {
               rows={10}
               readOnly
               className={cx(
-                "border-[1px] border-solid border-black p-2 font-mono",
+                "flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base placeholder:text-[#bbb]",
                 {
-                  error: "has-error",
+                  "text-[#f00] border-2 border-solid border-[#f00]": error,
                 }
               )}
               placeholder={!error ? generateOutput(sampleInput) : undefined}
@@ -260,11 +279,15 @@ function App() {
 
           <div className="see-on-github">
             <a
+              className="inline-flex items-center no-underline opacity-70 hover:opacity-100"
               href="https://github.com/veksen/npm-check-update-terminal-helper"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <GitHub /> <span className="text">Source on GitHub</span>
+              <GitHub className="w-5 mr-2" />
+              <span className="text text-[blue] border-b-2 border-b-[blue] border-solid;">
+                Source on GitHub
+              </span>
             </a>
           </div>
         </div>
