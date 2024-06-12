@@ -56,6 +56,32 @@ const mock = {
     },
   },
 
+  limitMinor: {
+    input: ` react              ^18.0.0  →  ^18.2.0
+    react-dom          ^18.0.0  →  ^18.2.0
+    react-scripts        3.0.1  →    4.0.1
+    typescript          ^3.5.3  →   ^4.1.2
+    @types/react      ^18.0.0  →  ^18.2.0
+    @types/react-dom   ^18.0.0  →  ^18.2.0`,
+    output: {
+      npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
+      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
+    },
+  },
+
+  limitPatch: {
+    input: ` react              ^16.8.6  →  ^17.0.1
+    react-dom          ^16.8.6  →  ^17.0.1
+    react-scripts        3.0.1  →    4.0.1
+    typescript          ^3.5.3  →   ^3.5.5
+    @types/react      ^16.8.23  →  ^17.0.0
+    @types/react-dom   ^16.8.5  →  ^17.0.0`,
+    output: {
+      npm: `npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 3.5.5"`,
+      yarn: `npx npm-check-updates -u typescript; yarn; git add -A; git commit -m "chore(deps): bump typescript to 3.5.5"`,
+    },
+  },
+
   invalid: {
     input: ` react              ^16.8.6  →  ^17.0.1
     react-dom          ^16.8.6  →  ^17.0.1
@@ -259,6 +285,42 @@ it("makes it possible to enable/disable libraries", async () => {
   expect(getInput(typesReactDomLib).checked).toBeTruthy()
 })
 
+it("limits packages to minor", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const minorRadio = getByTestId("radio-minor") as HTMLInputElement
+
+  minorRadio.click()
+
+  input.focus()
+  await userEvent.paste(mock.limitMinor.input)
+
+  expect(minorRadio.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.limitMinor.input)
+  expect(output.value).toEqual(mock.limitMinor.output.npm)
+})
+
+it("limits packages to patch", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const patchRadio = getByTestId("radio-patch") as HTMLInputElement
+
+  patchRadio.click()
+
+  input.focus()
+  await userEvent.paste(mock.limitPatch.input)
+
+  expect(patchRadio.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.limitPatch.input)
+  expect(output.value).toEqual(mock.limitPatch.output.npm)
+})
+
 it("makes it possible to bump lockfile", async () => {
   const { getByTestId } = render(<App />)
 
@@ -346,6 +408,24 @@ it("saves disabled libraries to localstorage", async () => {
     "ignoredLibs",
     JSON.stringify(["react-dom", "typescript"])
   )
+})
+
+it("restores upgrade version from localstorage", async () => {
+  localStorage.setItem("upgradeVersion", JSON.stringify("minor"))
+
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const minorRadio = getByTestId("radio-minor") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.limitMinor.input)
+
+  expect(minorRadio.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.limitMinor.input)
+  expect(output.value).toEqual(mock.limitMinor.output.npm)
 })
 
 it("restores package manager from localstorage", async () => {

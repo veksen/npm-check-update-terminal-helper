@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useState, useEffect, useMemo } from "react"
 import cx from "clsx"
+import semverDiff from "semver/functions/diff"
 import Option from "./components/option"
 import Radio from "./components/radio"
 import { useLocalStorage } from "./useLocalStorage"
@@ -12,6 +13,8 @@ interface Library {
   from: string
   to: string
 }
+
+type UpgradeVersion = "major" | "minor" | "patch"
 
 type PackageManager = "yarn" | "npm"
 
@@ -27,6 +30,10 @@ gatsby-transformer-sharp         ^2.2.0  →   ^2.2.1`
 function App() {
   const [input, setInput] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [upgradeVersion, setUpgradeVersion] = useLocalStorage<UpgradeVersion>(
+    "upgradeVersion",
+    "major"
+  )
   const [packageManager, setPackageManager] = useLocalStorage<PackageManager>(
     "packageManager",
     "npm"
@@ -64,6 +71,16 @@ function App() {
 
   const withoutIgnored = (library: Library): boolean => {
     return !ignoredLibs.includes(library.name)
+  }
+
+  const atMostMinor = (library: Library): boolean => {
+    const diff = semverDiff(library.from, library.to)
+    return diff === "minor" || diff === "patch"
+  }
+
+  const atMostPatch = (library: Library): boolean => {
+    const diff = semverDiff(library.from, library.to)
+    return diff === "patch"
   }
 
   const parseLibraries = (str: string): Library[] => {
@@ -121,7 +138,15 @@ function App() {
       `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${to}"`
     const bumpedLockfile = bumpLockfileOutput()
 
-    const libraries = parseLibraries(str).filter(withoutIgnored)
+    let libraries = parseLibraries(str).filter(withoutIgnored)
+
+    if (upgradeVersion === "minor") {
+      libraries = libraries.filter(atMostMinor)
+    }
+
+    if (upgradeVersion === "patch") {
+      libraries = libraries.filter(atMostPatch)
+    }
 
     return [...libraries.map((library) => bumpLibrary(library)), bumpedLockfile]
       .filter(Boolean)
@@ -150,6 +175,37 @@ function App() {
         <div className="options flex flex-[0_0_auto] flex-col gap-2 p-4">
           <div className="settings-label mb-4 h-[26px]">Settings</div>
 
+          <div className="section-title">Limit versions</div>
+          <div
+            className="upgrade-version gap-1"
+            data-testid="upgrade-version-list"
+          >
+            <Radio
+              data-testid="upgrade-version"
+              id="major"
+              checked={upgradeVersion === "major"}
+              onChange={() => setUpgradeVersion("major")}
+            >
+              Major
+            </Radio>
+            <Radio
+              data-testid="upgrade-version"
+              id="minor"
+              checked={upgradeVersion === "minor"}
+              onChange={() => setUpgradeVersion("minor")}
+            >
+              Minor
+            </Radio>
+            <Radio
+              data-testid="upgrade-version"
+              id="patch"
+              checked={upgradeVersion === "patch"}
+              onChange={() => setUpgradeVersion("patch")}
+            >
+              Patch
+            </Radio>
+          </div>
+
           <div className="section-title">Ignored libraries</div>
           <div
             className={cx("libraries gap-1", {
@@ -171,6 +227,7 @@ function App() {
               )
             })}
           </div>
+
           <div
             className="section-title cursor-help"
             title={`Will delete and force recreate your ${
@@ -196,6 +253,7 @@ function App() {
               id="yarn"
               checked={packageManager === "yarn"}
               onChange={() => setPackageManager("yarn")}
+              reverse={true}
             >
               Yarn
             </Radio>
@@ -204,6 +262,7 @@ function App() {
               id="npm"
               checked={packageManager === "npm"}
               onChange={() => setPackageManager("npm")}
+              reverse={true}
             >
               npm
             </Radio>
