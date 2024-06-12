@@ -250,7 +250,7 @@ function App() {
               value={input}
               onChange={handleOnChange}
               rows={10}
-              className="flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base placeholder:text-[#bbb]"
+              className="flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base leading-[1.2] placeholder:text-[#bbb]"
               placeholder={sampleInput}
             />
           </div>
@@ -268,7 +268,7 @@ function App() {
               rows={10}
               readOnly
               className={cx(
-                "flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base placeholder:text-[#bbb]",
+                "flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base leading-[1.2] placeholder:text-[#bbb]",
                 {
                   "text-[#f00] border-2 border-solid border-[#f00]": error,
                 }
