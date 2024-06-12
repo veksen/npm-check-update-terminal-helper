@@ -144,9 +144,9 @@ function App() {
 
   return (
     <div className="app mx-0 my-4">
-      <div className="container flex box-border max-w-[1100px] w-full mx-auto my-0 px-8 py-0">
-        <div className="options flex-[0_0_auto] flex flex-col p-4 gap-2">
-          <div className="settings-label h-[26px] mb-4">Settings</div>
+      <div className="container mx-auto my-0 box-border flex w-full max-w-[1100px] px-8 py-0">
+        <div className="options flex flex-[0_0_auto] flex-col gap-2 p-4">
+          <div className="settings-label mb-4 h-[26px]">Settings</div>
 
           <div className="section-title">Ignored libraries</div>
           <div
@@ -158,7 +158,7 @@ function App() {
             {libraries.map((library) => {
               return (
                 <label
-                  className="library flex items-center cursor-pointer gap-1"
+                  className="library flex cursor-pointer items-center gap-1"
                   data-testid="library"
                   key={library.name}
                 >
@@ -184,7 +184,7 @@ function App() {
             Bump lockfile [?]
           </div>
           <label
-            className="option flex items-center cursor-pointer gap-1"
+            className="option flex cursor-pointer items-center gap-1"
             data-testid="bump-lockfile"
           >
             <input
@@ -198,8 +198,8 @@ function App() {
           </label>
         </div>
 
-        <div className="input-output w-[600px] flex-[0_0_600px] p-4 gap-4">
-          <div className="inline-radios flex gap-4 h-[26px] mb-4">
+        <div className="input-output w-[600px] flex-[0_0_600px] gap-4 p-4">
+          <div className="inline-radios mb-4 flex h-[26px] gap-4">
             <div className="inline-radio flex">
               <input
                 className="peer order-2 cursor-pointer"
@@ -239,7 +239,7 @@ function App() {
               Input
               <br />
               (copy/paste from{" "}
-              <code className="inline-block text-[90%] p-[3px] rounded-[3px] bg-[#eee]">
+              <code className="inline-block rounded-[3px] bg-[#eee] p-[3px] text-[90%]">
                 npx npm-check-updates
               </code>
               )
@@ -250,7 +250,7 @@ function App() {
               value={input}
               onChange={handleOnChange}
               rows={10}
-              className="flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base leading-[1.2] placeholder:text-[#bbb]"
+              className="mb-8 w-full flex-[1_0_auto] resize-none border-[1px] border-solid border-black p-2 font-mono text-base leading-[1.2] placeholder:text-[#bbb]"
               placeholder={sampleInput}
             />
           </div>
@@ -268,9 +268,9 @@ function App() {
               rows={10}
               readOnly
               className={cx(
-                "flex-[1_0_auto] resize-none w-full border-[1px] border-solid border-black p-2 mb-8 font-mono text-base leading-[1.2] placeholder:text-[#bbb]",
+                "mb-8 w-full flex-[1_0_auto] resize-none border-[1px] border-solid border-black p-2 font-mono text-base leading-[1.2] placeholder:text-[#bbb]",
                 {
-                  "text-[#f00] border-2 border-solid border-[#f00]": error,
+                  "border-2 border-solid border-[#f00] text-[#f00]": error,
                 }
               )}
               placeholder={!error ? generateOutput(sampleInput) : undefined}
@@ -284,8 +284,8 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <GitHub className="w-5 mr-2" />
-              <span className="text text-[blue] border-b-2 border-b-[blue] border-solid;">
+              <GitHub className="mr-2 w-5" />
+              <span className="text border-solid; border-b-2 border-b-[blue] text-[blue]">
                 Source on GitHub
               </span>
             </a>
