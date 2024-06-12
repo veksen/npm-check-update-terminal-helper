@@ -70,6 +70,18 @@ function App() {
     return validateName(name) && validateVersion(from) && validateVersion(to)
   }
 
+  function isDisabled(library: Library): boolean {
+    if (upgradeVersion === "minor") {
+      return !atMostMinor(library)
+    }
+
+    if (upgradeVersion === "patch") {
+      return !atMostPatch(library)
+    }
+
+    return false
+  }
+
   const withoutIgnored = (library: Library): boolean => {
     return !ignoredLibs.includes(library.name)
   }
@@ -238,6 +250,7 @@ function App() {
                   value={library.name}
                   checked={!ignoredLibs.includes(library.name)}
                   onChange={() => toggleIgnoreLibrary(library.name)}
+                  disabled={isDisabled(library)}
                 >
                   {library.name} {library.from} → {library.to}
                 </Option>
