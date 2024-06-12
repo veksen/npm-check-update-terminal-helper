@@ -30,6 +30,19 @@ const mock = {
     },
   },
 
+  deep: {
+    input: ` react              ^16.8.6  →  ^17.0.1
+    react-dom          ^16.8.6  →  ^17.0.1
+    react-scripts        3.0.1  →    4.0.1
+    typescript          ^3.5.3  →   ^4.1.2
+    @types/react      ^16.8.23  →  ^17.0.0
+    @types/react-dom   ^16.8.5  →  ^17.0.0`,
+    output: {
+      npm: `npx npm-check-updates -u react --deep; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom --deep; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts --deep; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript --deep; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react --deep; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom --deep; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
+      yarn: `npx npm-check-updates -u react --deep; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript --deep; yarn; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react --deep; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
+    },
+  },
+
   withMinor: {
     input: ` react              ^16.8.6  →  ^17.0.1
     react-dom          ^16.8.6  →  ^17.0.1
@@ -339,6 +352,24 @@ it("makes it possible to bump lockfile", async () => {
 
   expect(input.value).toEqual(mock.withBumpLockfile.input)
   expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
+})
+
+it("makes it possible to deep/recursive upgrade", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const deep = getByTestId("deep") as HTMLLabelElement
+  const deepCheckbox = getByTestId("deep-checkbox") as HTMLInputElement
+
+  deep.click()
+  input.focus()
+  await userEvent.paste(mock.deep.input)
+
+  expect(deepCheckbox.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.deep.input)
+  expect(output.value).toEqual(mock.deep.output.npm)
 })
 
 it("restores disabled libraries from localstorage", async () => {

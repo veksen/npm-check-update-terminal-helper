@@ -46,6 +46,7 @@ function App() {
     "bumpLockfile",
     false
   )
+  const [deep, setDeep] = useLocalStorage<boolean>("deep", false)
 
   useEffect(() => {
     if (!input.trim()) {
@@ -133,9 +134,25 @@ function App() {
   }
 
   function generateOutput(str: string): string {
-    const install = packageManager === "npm" ? "npm i" : "yarn"
-    const bumpLibrary = ({ name, to }: Library): string =>
-      `npx npm-check-updates -u ${name}; ${install}; git add -A; git commit -m "chore(deps): bump ${name} to ${to}"`
+    const bumpLibrary = ({ name, to }: Library): string => {
+      const ncuCommand = [
+        "npx npm-check-updates",
+        `-u ${name}`,
+        deep ? "--deep" : "",
+      ].join(" ")
+
+      const command = [
+        ncuCommand,
+        packageManager === "npm" ? "npm i" : "yarn",
+        `git add -A`,
+        `git commit -m "chore(deps): bump ${name} to ${to}"`,
+      ]
+        .map((str) => str.trim())
+        .join("; ")
+
+      return command
+    }
+
     const bumpedLockfile = bumpLockfileOutput()
 
     let libraries = parseLibraries(str).filter(withoutIgnored)
@@ -244,6 +261,21 @@ function App() {
           >
             Bump
           </Option>
+
+          <div
+            className="section-title cursor-help"
+            title={`Necessary for monorepos. Will update all dependencies in all packages.`}
+          >
+            Recursive [?]
+          </div>
+          <Option
+            data-testid="deep"
+            value="deep"
+            checked={deep}
+            onChange={() => setDeep((prevValue) => !prevValue)}
+          >
+            --deep
+          </Option>
         </div>
 
         <div className="input-output w-[600px] flex-[0_0_600px] gap-4 p-4">
@@ -274,7 +306,7 @@ function App() {
               <br />
               (copy/paste from{" "}
               <code className="inline-block rounded-[3px] bg-[#eee] p-[3px] text-[90%]">
-                npx npm-check-updates
+                npx npm-check-updates{deep ? " --deep" : ""}
               </code>
               )
             </label>
