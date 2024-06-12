@@ -1,7 +1,10 @@
+/// <reference types="vite-plugin-svgr/client" />
+
 import React, { ChangeEvent, useState, useEffect, useMemo } from "react"
 import { useLocalStorage } from "./useLocalStorage"
 import "./App.css"
-import { ReactComponent as GitHub } from "./github.svg"
+import GitHub from "./github.svg?react"
+
 interface Library {
   name: string
   from: string
@@ -71,16 +74,14 @@ function App() {
         .split(/\n/)
         .map((line) => line.trim())
         .filter(Boolean)
-        .map(
-          (line): Library => {
-            const [name, versionFrom, , versionTo] = line.split(/ +/)
-            return {
-              name,
-              from: versionFrom.replace(/\^|~/, ""),
-              to: versionTo.replace(/\^|~/, ""),
-            }
+        .map((line): Library => {
+          const [name, versionFrom, , versionTo] = line.split(/ +/)
+          return {
+            name,
+            from: versionFrom.replace(/\^|~/, ""),
+            to: versionTo.replace(/\^|~/, ""),
           }
-        )
+        })
         .map((library) => {
           if (!validate(library)) {
             throw Error("invalid output")
