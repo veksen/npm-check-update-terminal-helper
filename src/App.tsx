@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useState, useEffect, useMemo } from "react"
 import cx from "clsx"
+import Option from "./components/option"
 import { useLocalStorage } from "./useLocalStorage"
 import GitHub from "./github.svg?react"
 

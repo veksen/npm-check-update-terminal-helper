@@ -69,8 +69,8 @@ const mock = {
   },
 }
 
-const getItemSpy = vi.spyOn(localStorage, 'getItem')
-const setItemSpy = vi.spyOn(localStorage, 'setItem')
+const getItemSpy = vi.spyOn(localStorage, "getItem")
+const setItemSpy = vi.spyOn(localStorage, "setItem")
 
 afterEach(() => {
   getItemSpy.mockClear()
