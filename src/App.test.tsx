@@ -1,5 +1,5 @@
 import { cleanup, render } from "@testing-library/react"
-import { vi, it, beforeEach, expect, afterEach } from "vitest"
+import { vi, it, expect, afterEach } from "vitest"
 import userEvent from "@testing-library/user-event"
 import App from "./App"
 
@@ -69,6 +69,19 @@ const mock = {
     },
   },
 
+  byName: {
+    input: ` react              ^16.8.6  →  ^17.0.1
+    react-dom          ^16.8.6  →  ^17.0.1
+    react-scripts        3.0.1  →    4.0.1
+    typescript              ^4  →       ^4
+    @types/react      ^16.8.23  →  ^17.0.0
+    @types/react-dom   ^16.8.5  →  ^17.0.0`,
+    output: {
+      npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
+      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
+    },
+  },
+
   limitMinor: {
     input: ` react              ^18.0.0  →  ^18.2.0
     react-dom          ^18.0.0  →  ^18.2.0
@@ -115,9 +128,6 @@ afterEach(() => {
   getItemSpy.mockClear()
   setItemSpy.mockClear()
   localStorage.clear()
-})
-
-beforeEach(() => {
   cleanup()
 })
 
@@ -209,6 +219,23 @@ it("supports major versions", async () => {
 
   expect(input.value).toEqual(mock.withMajor.input)
   expect(output.value).toEqual(mock.withMajor.output.npm)
+})
+
+it("filters by name", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  const filterByNameInput = getByTestId("filter-by-name") as HTMLInputElement
+
+  await userEvent.type(filterByNameInput, "react")
+
+  input.focus()
+  await userEvent.paste(mock.byName.input)
+
+  expect(input.value).toEqual(mock.byName.input)
+  expect(output.value).toEqual(mock.byName.output.npm)
 })
 
 it("shows a message on an invalid input", async () => {

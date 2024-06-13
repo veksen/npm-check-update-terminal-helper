@@ -34,6 +34,7 @@ function App() {
     "upgradeVersion",
     "major"
   )
+  const [filterByName, setFilterByName] = useState<string>("")
   const [packageManager, setPackageManager] = useLocalStorage<PackageManager>(
     "packageManager",
     "npm"
@@ -71,12 +72,16 @@ function App() {
   }
 
   function isDisabled(library: Library): boolean {
-    if (upgradeVersion === "minor") {
-      return !atMostMinor(library)
+    if (upgradeVersion === "minor" && !atMostMinor(library)) {
+      return true
     }
 
-    if (upgradeVersion === "patch") {
-      return !atMostPatch(library)
+    if (upgradeVersion === "patch" && !atMostPatch(library)) {
+      return true
+    }
+
+    if (filterByName && !byName(library)) {
+      return true
     }
 
     return false
@@ -94,6 +99,10 @@ function App() {
   const atMostPatch = (library: Library): boolean => {
     const diff = semverDiff(library.from, library.to)
     return diff === "patch"
+  }
+
+  const byName = (library: Library): boolean => {
+    return library.name.includes(filterByName)
   }
 
   const parseLibraries = (str: string): Library[] => {
@@ -180,6 +189,10 @@ function App() {
       libraries = libraries.filter(atMostPatch)
     }
 
+    if (filterByName) {
+      libraries = libraries.filter(byName)
+    }
+
     return [...libraries.map((library) => bumpLibrary(library)), bumpedLockfile]
       .filter(Boolean)
       .join("; ")
@@ -236,6 +249,16 @@ function App() {
             >
               Patch
             </Radio>
+          </div>
+
+          <div className="section-title">Filter by name</div>
+          <div className="gap-1">
+            <input
+              className="w-full flex-[1_0_auto] resize-none border-[1px] border-solid border-black p-2 font-mono text-base leading-[1.2] placeholder:text-[#bbb]"
+              data-testid="filter-by-name"
+              value={filterByName}
+              onChange={(e) => setFilterByName(e.target.value)}
+            />
           </div>
 
           <div className="section-title">Ignored libraries</div>
