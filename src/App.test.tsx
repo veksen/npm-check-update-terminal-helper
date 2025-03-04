@@ -549,3 +549,26 @@ it("restores bump lockfile from localstorage", async () => {
   expect(input.value).toEqual(mock.withBumpLockfile.input)
   expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
 })
+
+it("restores bump lockfile from localstorage", async () => {
+  localStorage.setItem("bumpLockfile", JSON.stringify(true))
+
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
+  const bumpLockfileCheckbox = getByTestId(
+    "bump-lockfile-checkbox"
+  ) as HTMLInputElement
+
+  userEvent.click(yarnRadio)
+
+  input.focus()
+  await userEvent.paste(mock.withBumpLockfile.input)
+
+  expect(bumpLockfileCheckbox.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.withBumpLockfile.input)
+  expect(output.value).toEqual(mock.withBumpLockfile.output.yarn)
+})
