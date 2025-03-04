@@ -126,6 +126,7 @@ function App() {
         .map((line) => line.trim())
         .filter((line) => !line.startsWith("Run npx npm-check-updates "))
         .filter((line) => !line.includes("Checking "))
+        .filter((line) => !line.includes("All dependencies match"))
         .filter((line) => !line.includes("No dependencies."))
         .filter(Boolean)
         .map((line): Library => {
