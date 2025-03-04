@@ -105,6 +105,16 @@ function App() {
     return library.name.includes(filterByName)
   }
 
+  const uniqueByName = (libraries: Library[]): Library[] => {
+    const uniqueLibraries = new Map<string, Library>()
+
+    libraries.forEach((library) => {
+      uniqueLibraries.set(library.name, library)
+    })
+
+    return Array.from(uniqueLibraries.values())
+  }
+
   const parseLibraries = (str: string): Library[] => {
     if (!str) return []
 
@@ -192,6 +202,8 @@ function App() {
     if (filterByName) {
       libraries = libraries.filter(byName)
     }
+
+    libraries = uniqueByName(libraries)
 
     return [...libraries.map((library) => bumpLibrary(library)), bumpedLockfile]
       .filter(Boolean)

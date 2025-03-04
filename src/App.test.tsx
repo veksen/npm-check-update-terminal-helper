@@ -108,6 +108,19 @@ const mock = {
     },
   },
 
+  unique: {
+    input: ` react              ^18.0.0  →  ^18.2.0
+    react-dom          ^18.0.0  →  ^18.2.0
+    @types/react      ^18.0.0  →  ^18.2.0
+    @types/react-dom   ^18.0.0  →  ^18.2.0
+    react              ^18.0.0  →  ^18.2.0
+    react-dom          ^18.0.0  →  ^18.2.0`,
+    output: {
+      npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
+      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
+    },
+  },
+
   invalid: {
     input: ` react              ^16.8.6  →  ^17.0.1
     react-dom          ^16.8.6  →  ^17.0.1
@@ -359,6 +372,19 @@ it("limits packages to patch", async () => {
 
   expect(input.value).toEqual(mock.limitPatch.input)
   expect(output.value).toEqual(mock.limitPatch.output.npm)
+})
+
+it("filters unique packages", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.unique.input)
+
+  expect(input.value).toEqual(mock.unique.input)
+  expect(output.value).toEqual(mock.unique.output.npm)
 })
 
 it("makes it possible to bump lockfile", async () => {
