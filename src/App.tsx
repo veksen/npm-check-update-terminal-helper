@@ -214,7 +214,8 @@ function App() {
     if (error || !input) {
       return parseLibraries(sampleInput)
     }
-    return parseLibraries(input)
+    const libs = parseLibraries(input)
+    return uniqueByName(libs)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input])
 

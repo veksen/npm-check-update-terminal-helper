@@ -387,6 +387,23 @@ it("filters unique packages", async () => {
   expect(output.value).toEqual(mock.unique.output.npm)
 })
 
+it("renders only unique libraries in the UI", async () => {
+  const { getByTestId, getAllByTestId, getByText } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.unique.input)
+
+  expect(getByText("react 18.0.0 → 18.2.0")).toBeDefined()
+  expect(getByText("react-dom 18.0.0 → 18.2.0")).toBeDefined()
+  expect(getByText("@types/react 18.0.0 → 18.2.0")).toBeDefined()
+  expect(getByText("@types/react-dom 18.0.0 → 18.2.0")).toBeDefined()
+
+  // only 4!
+  expect(getAllByTestId("library")).toHaveLength(4)
+})
+
 it("makes it possible to bump lockfile", async () => {
   const { getByTestId } = render(<App />)
 
@@ -436,6 +453,8 @@ it("restores disabled libraries from localstorage", async () => {
 
   input.focus()
   await userEvent.paste(mock.default.input)
+
+  expect(getAllByTestId("library")).toHaveLength(6)
 
   const [
     reactLib,
