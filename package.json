@@ -14,7 +14,7 @@
     "clsx": "^2.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "semver": "^7.6.2",
+    "semver": "^7.7.1",
     "vite-plugin-svgr": "^4.2.0"
   },
   "devDependencies": {
