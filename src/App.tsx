@@ -71,6 +71,16 @@ function App() {
     return validateName(name) && validateVersion(from) && validateVersion(to)
   }
 
+  function extractVersion(versionStr: string): string {
+    // Handle npm alias format: npm:package@version
+    const npmAliasMatch = versionStr.match(/^npm:.*@(.*)$/)
+    if (npmAliasMatch) {
+      return npmAliasMatch[1]
+    }
+    // Strip ^ and ~ prefixes (existing behavior)
+    return versionStr.replace(/^\^|~/, "")
+  }
+
   function isDisabled(library: Library): boolean {
     if (upgradeVersion === "minor" && !atMostMinor(library)) {
       return true
@@ -133,8 +143,8 @@ function App() {
           const [name, versionFrom, , versionTo] = line.split(/ +/)
           return {
             name,
-            from: versionFrom.replace(/\^|~/, ""),
-            to: versionTo.replace(/\^|~/, ""),
+            from: extractVersion(versionFrom),
+            to: extractVersion(versionTo),
           }
         })
         .map((library) => {

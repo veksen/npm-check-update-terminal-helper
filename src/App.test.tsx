@@ -132,6 +132,14 @@ const mock = {
       yarn: `This doesn't look like a valid npx npm-check-updates output.`,
     },
   },
+
+  npmAlias: {
+    input: `vite   npm:rolldown-vite@7.2.5  →  7.3.1`,
+    output: {
+      npm: `npx npm-check-updates -u vite; npm i; git add -A; git commit -m "chore(deps): bump vite to 7.3.1"`,
+      yarn: `npx npm-check-updates -u vite; yarn; git add -A; git commit -m "chore(deps): bump vite to 7.3.1"`,
+    },
+  },
 }
 
 const getItemSpy = vi.spyOn(localStorage, "getItem")
@@ -590,4 +598,17 @@ it("restores bump lockfile from localstorage", async () => {
 
   expect(input.value).toEqual(mock.withBumpLockfile.input)
   expect(output.value).toEqual(mock.withBumpLockfile.output.yarn)
+})
+
+it("supports npm alias format (npm:package@version)", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.npmAlias.input)
+
+  expect(input.value).toEqual(mock.npmAlias.input)
+  expect(output.value).toEqual(mock.npmAlias.output.npm)
 })
