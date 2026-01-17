@@ -140,6 +140,12 @@ const mock = {
       yarn: `npx npm-check-updates -u vite; yarn; git add -A; git commit -m "chore(deps): bump vite to 7.3.1"`,
     },
   },
+
+  monorepoWithNotFound: {
+    input: ` react    ^18.0.0  →  ^18.2.0
+
+ @query-doctor/pglite  Not found`,
+  },
 }
 
 const getItemSpy = vi.spyOn(localStorage, "getItem")
@@ -611,4 +617,20 @@ it("supports npm alias format (npm:package@version)", async () => {
 
   expect(input.value).toEqual(mock.npmAlias.input)
   expect(output.value).toEqual(mock.npmAlias.output.npm)
+})
+
+it("handles monorepo output with 'Not found' packages", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.monorepoWithNotFound.input)
+
+  expect(input.value).toEqual(mock.monorepoWithNotFound.input)
+  // Should not show error - should produce valid output
+  expect(output.value).not.toEqual(
+    "This doesn't look like a valid npx npm-check-updates output."
+  )
 })

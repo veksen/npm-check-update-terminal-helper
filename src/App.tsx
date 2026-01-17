@@ -138,6 +138,7 @@ function App() {
         .filter((line) => !line.includes("Checking "))
         .filter((line) => !line.includes("All dependencies match"))
         .filter((line) => !line.includes("No dependencies."))
+        .filter((line) => !line.includes("Not found"))
         .filter(Boolean)
         .map((line): Library => {
           const [name, versionFrom, , versionTo] = line.split(/ +/)
