@@ -27,7 +27,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/semver": "^7.7.1",
     "@vitejs/plugin-react": "^5.1.2",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.4.23",
     "happy-dom": "^17.1.9",
     "oxfmt": "^0.23.0",
     "oxlint": "^1.38.0",
