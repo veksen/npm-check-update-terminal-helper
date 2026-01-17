@@ -30,7 +30,7 @@
     "autoprefixer": "^10.4.23",
     "happy-dom": "^20.3.1",
     "oxfmt": "^0.24.0",
-    "oxlint": "^1.38.0",
+    "oxlint": "^1.39.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.8.2",
