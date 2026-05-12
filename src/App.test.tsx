@@ -146,6 +146,14 @@ const mock = {
 
  @query-doctor/pglite  Not found`,
   },
+
+  prerelease: {
+    input: ` @typescript/native-preview  7.0.0-dev.20260510.1  →  7.0.0-dev.20260511.1
+ vitest                                    ^4.1.5  →                ^4.1.6`,
+    output: {
+      npm: `npx npm-check-updates -u @typescript/native-preview; npm i; git add -A; git commit -m "chore(deps): bump @typescript/native-preview to 7.0.0-dev.20260511.1"; npx npm-check-updates -u vitest; npm i; git add -A; git commit -m "chore(deps): bump vitest to 4.1.6"`,
+    },
+  },
 }
 
 const getItemSpy = vi.spyOn(localStorage, "getItem")
@@ -617,6 +625,19 @@ it("supports npm alias format (npm:package@version)", async () => {
 
   expect(input.value).toEqual(mock.npmAlias.input)
   expect(output.value).toEqual(mock.npmAlias.output.npm)
+})
+
+it("handles prerelease versions (e.g. 7.0.0-dev.20260510.1)", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.prerelease.input)
+
+  expect(input.value).toEqual(mock.prerelease.input)
+  expect(output.value).toEqual(mock.prerelease.output.npm)
 })
 
 it("handles monorepo output with 'Not found' packages", async () => {
