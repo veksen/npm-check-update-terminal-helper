@@ -225,7 +225,14 @@ export default function SettingsSidebar({
 
       <div className="side-sec">
         <h3>Appearance</h3>
-        <div className="seg" role="radiogroup" aria-label="Theme">
+        <label className="mini-label" id="theme-label">
+          Theme
+        </label>
+        <div
+          className="seg seg-grid seg-grid-2"
+          role="radiogroup"
+          aria-labelledby="theme-label"
+        >
           {(Object.keys(THEME_META) as Theme[]).map((v) => (
             <button
               key={v}
@@ -238,7 +245,14 @@ export default function SettingsSidebar({
             </button>
           ))}
         </div>
-        <div className="seg" role="radiogroup" aria-label="Density">
+        <label className="mini-label" id="density-label">
+          Density
+        </label>
+        <div
+          className="seg seg-grid seg-grid-3"
+          role="radiogroup"
+          aria-labelledby="density-label"
+        >
           {DENSITIES.map((v) => (
             <button
               key={v}

@@ -390,8 +390,36 @@ body {
   background: var(--accent);
   color: var(--accent-ink);
 }
-.side-sec .seg {
-  flex-wrap: wrap;
+/* Grid variant: equal-width cells that fill the container instead of
+   wrapping into ragged pill rows (used for the sidebar Appearance segs). */
+.seg-grid {
+  display: grid;
+  width: 100%;
+}
+.seg-grid button {
+  text-align: center;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 11.5px;
+}
+.seg-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.seg-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mini-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  font-weight: 500;
+  margin-bottom: -4px;
+}
+.mini-label:not(:first-of-type) {
+  margin-top: 4px;
 }
 
 /* Step heading */
