@@ -22,9 +22,9 @@
   --panel-2: #1a1e22;
   --border: #23282d;
   --border-soft: #1c2024;
-  --text: #e7e9ec;
-  --text-dim: #9aa1a8;
-  --text-mute: #5f666d;
+  --text: #f4f6f8;
+  --text-dim: #d9dcdf;
+  --text-mute: #cccfd3;
   --accent: #7fdbff;
   --accent-ink: #04161d;
   --code-bg: #0a0c0e;
@@ -32,13 +32,13 @@
     0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 8px 24px rgba(0, 0, 0, 0.5);
 
   --chip-patch-bg: rgba(46, 160, 67, 0.15);
-  --chip-patch-fg: #4ac26b;
+  --chip-patch-fg: #74cd8e;
   --chip-patch-bd: rgba(46, 160, 67, 0.35);
   --chip-minor-bg: rgba(210, 153, 34, 0.15);
-  --chip-minor-fg: #e3b341;
+  --chip-minor-fg: #e3b64a;
   --chip-minor-bd: rgba(210, 153, 34, 0.35);
   --chip-major-bg: rgba(229, 83, 75, 0.16);
-  --chip-major-fg: #f8746e;
+  --chip-major-fg: #f1a7a5;
   --chip-major-bd: rgba(229, 83, 75, 0.42);
 
   --font-ui: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
@@ -57,8 +57,8 @@
   --border: #e3e3de;
   --border-soft: #ececea;
   --text: #14161a;
-  --text-dim: #565a62;
-  --text-mute: #8a8e94;
+  --text-dim: #44474e;
+  --text-mute: #575a60;
   --accent: #2c5fff;
   --accent-ink: #ffffff;
   --code-bg: #f4f4f0;
@@ -90,23 +90,23 @@
   --panel-2: #1a212c;
   --border: #262d39;
   --border-soft: #1f2530;
-  --text: #e6edf3;
-  --text-dim: #9aa7b4;
-  --text-mute: #6b7785;
-  --accent: #79b8ff;
+  --text: #f2f7fc;
+  --text-dim: #d4dde4;
+  --text-mute: #c8d1d9;
+  --accent: #a6d0ff;
   --accent-ink: #06121f;
   --code-bg: #0a1019;
   --shadow:
     0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px rgba(0, 0, 0, 0.4);
 
   --chip-patch-bg: rgba(46, 160, 67, 0.16);
-  --chip-patch-fg: #56d364;
+  --chip-patch-fg: #59d467;
   --chip-patch-bd: rgba(46, 160, 67, 0.4);
   --chip-minor-bg: rgba(187, 128, 9, 0.18);
-  --chip-minor-fg: #e3b341;
+  --chip-minor-fg: #e3b74d;
   --chip-minor-bd: rgba(187, 128, 9, 0.42);
   --chip-major-bg: rgba(248, 81, 73, 0.16);
-  --chip-major-fg: #ff8980;
+  --chip-major-fg: #f8a6a1;
   --chip-major-bd: rgba(248, 81, 73, 0.4);
 
   --font-ui: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
@@ -137,17 +137,17 @@
 /* ── Editorial (warm cream, serif display) ──────────────────────────────*/
 [data-theme="editorial"] {
   --bg: #f3eee2;
-  --bg-alt: #ecdfca;
+  --bg-alt: #f0e6d5;
   --panel: #faf6ec;
   --panel-2: #f3eee2;
   --border: #1d1916;
   --border-soft: #c9bfa9;
   --text: #1c1814;
-  --text-dim: #5a4f3f;
-  --text-mute: #8a7d68;
-  --accent: #b94921;
+  --text-dim: #302922;
+  --text-mute: #484036;
+  --accent: #b54820;
   --accent-ink: #faf6ec;
-  --code-bg: #ece4d2;
+  --code-bg: #eee6d6;
   --shadow:
     0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 1px 0 rgba(28, 24, 20, 0.06);
 
@@ -552,13 +552,15 @@ body {
 }
 
 /* Errors */
+/* Error message text uses --text for legibility; the red background and
+   border carry the error signal (chip fgs are tuned for 10px badges only). */
 .parse-errs {
   background: var(--chip-major-bg);
   border-bottom: 1px solid var(--chip-major-bd);
   padding: 10px 14px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--chip-major-fg);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   gap: 4px;
