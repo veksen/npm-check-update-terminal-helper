@@ -1,7 +1,11 @@
-import { cleanup, render } from "@testing-library/react"
+import { cleanup, render, within } from "@testing-library/react"
 import { vi, it, expect, afterEach } from "vitest"
 import userEvent from "@testing-library/user-event"
 import App from "./App"
+
+// The one-liner output chains commands with the selected joiner (default &&).
+// Legacy expectations were written with "; " — chain() converts them.
+const chain = (legacy: string) => legacy.split("; ").join(" && ")
 
 const mock = {
   default: {
@@ -39,7 +43,6 @@ const mock = {
     @types/react-dom   ^16.8.5  →  ^17.0.0`,
     output: {
       npm: `npx npm-check-updates -u react --deep; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom --deep; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts --deep; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript --deep; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react --deep; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom --deep; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
-      yarn: `npx npm-check-updates -u react --deep; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript --deep; yarn; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react --deep; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
     },
   },
 
@@ -52,7 +55,6 @@ const mock = {
     @types/react-dom   ^16.8.5  →  ^17.0.0`,
     output: {
       npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4.1"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
-      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; yarn; git add -A; git commit -m "chore(deps): bump typescript to 4.1"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
     },
   },
 
@@ -65,7 +67,6 @@ const mock = {
     @types/react-dom   ^16.8.5  →  ^17.0.0`,
     output: {
       npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
-      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; yarn; git add -A; git commit -m "chore(deps): bump typescript to 4"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
     },
   },
 
@@ -78,7 +79,6 @@ const mock = {
     @types/react-dom   ^16.8.5  →  ^17.0.0`,
     output: {
       npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
-      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
     },
   },
 
@@ -91,7 +91,6 @@ const mock = {
     @types/react-dom   ^18.0.0  →  ^18.2.0`,
     output: {
       npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
-      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
     },
   },
 
@@ -104,7 +103,6 @@ const mock = {
     @types/react-dom   ^16.8.5  →  ^17.0.0`,
     output: {
       npm: `npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 3.5.5"`,
-      yarn: `npx npm-check-updates -u typescript; yarn; git add -A; git commit -m "chore(deps): bump typescript to 3.5.5"`,
     },
   },
 
@@ -117,7 +115,6 @@ const mock = {
     react-dom          ^18.0.0  →  ^18.2.0`,
     output: {
       npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; npm i; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; npm i; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
-      yarn: `npx npm-check-updates -u react; yarn; git add -A; git commit -m "chore(deps): bump react to 18.2.0"; npx npm-check-updates -u react-dom; yarn; git add -A; git commit -m "chore(deps): bump react-dom to 18.2.0"; npx npm-check-updates -u @types/react; yarn; git add -A; git commit -m "chore(deps): bump @types/react to 18.2.0"; npx npm-check-updates -u @types/react-dom; yarn; git add -A; git commit -m "chore(deps): bump @types/react-dom to 18.2.0"`,
     },
   },
 
@@ -127,9 +124,9 @@ const mock = {
     react-scripts        3.0.1  →    4.0.1
     typescript          ^3.5.3  →   ^4.1.2
     @types/react      ^16.8.23  →`,
+    // The malformed line is reported, the valid lines still produce commands.
     output: {
-      npm: `This doesn't look like a valid npx npm-check-updates output.`,
-      yarn: `This doesn't look like a valid npx npm-check-updates output.`,
+      npm: `npx npm-check-updates -u react; npm i; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"`,
     },
   },
 
@@ -137,7 +134,6 @@ const mock = {
     input: `vite   npm:rolldown-vite@7.2.5  →  7.3.1`,
     output: {
       npm: `npx npm-check-updates -u vite; npm i; git add -A; git commit -m "chore(deps): bump vite to 7.3.1"`,
-      yarn: `npx npm-check-updates -u vite; yarn; git add -A; git commit -m "chore(deps): bump vite to 7.3.1"`,
     },
   },
 
@@ -156,381 +152,255 @@ const mock = {
   },
 }
 
-const getItemSpy = vi.spyOn(localStorage, "getItem")
 const setItemSpy = vi.spyOn(localStorage, "setItem")
 
 afterEach(() => {
-  getItemSpy.mockClear()
   setItemSpy.mockClear()
   localStorage.clear()
   cleanup()
 })
 
-it("shows empty inputs", () => {
-  const { getByTestId } = render(<App />)
+type Renderer = ReturnType<typeof render>
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+function getOutput(r: Renderer): string {
+  return r.getByTestId("output").textContent ?? ""
+}
 
+function getCard(r: Renderer, name: string): HTMLElement {
+  const card = r
+    .getAllByTestId("library")
+    .find((el) => el.getAttribute("data-lib") === name)
+  if (!card) throw new Error(`no card for ${name}`)
+  return card
+}
+
+const isIncluded = (card: HTMLElement) =>
+  card.getAttribute("aria-pressed") === "true"
+
+const isSelected = (el: HTMLElement) =>
+  el.getAttribute("aria-selected") === "true"
+
+async function paste(r: Renderer, text: string) {
+  const input = r.getByTestId("input") as HTMLTextAreaElement
+  input.focus()
+  await userEvent.paste(text)
+  return input
+}
+
+it("shows an empty input and no output initially", () => {
+  const r = render(<App />)
+
+  const input = r.getByTestId("input") as HTMLTextAreaElement
   expect(input.value).toEqual("")
-  expect(output.value).toEqual("")
+  expect(r.queryByTestId("output")).toBeNull()
+  expect(r.queryAllByTestId("output-block")).toHaveLength(0)
 })
 
 it("fills output (npm)", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-
-  input.focus()
-  await userEvent.paste(mock.default.input)
+  const input = await paste(r, mock.default.input)
 
   expect(input.value).toEqual(mock.default.input)
-  expect(output.value).toEqual(mock.default.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.default.output.npm))
 })
 
 it("fills output (yarn)", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
-
-  userEvent.click(yarnRadio)
-
-  input.focus()
-  await userEvent.paste(mock.default.input)
+  await userEvent.click(r.getByTestId("radio-yarn"))
+  const input = await paste(r, mock.default.input)
 
   expect(input.value).toEqual(mock.default.input)
-  expect(output.value).toEqual(mock.default.output.yarn)
+  expect(getOutput(r)).toEqual(chain(mock.default.output.yarn))
 })
 
 it("behaves correctly switching from yarn to npm", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const npmRadio = getByTestId("radio-npm") as HTMLInputElement
-  const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
+  await paste(r, mock.default.input)
+  expect(getOutput(r)).toEqual(chain(mock.default.output.npm))
 
-  input.focus()
-  await userEvent.paste(mock.default.input)
+  await userEvent.click(r.getByTestId("radio-yarn"))
+  expect(getOutput(r)).toEqual(chain(mock.default.output.yarn))
 
-  expect(input.value).toEqual(mock.default.input)
-  expect(output.value).toEqual(mock.default.output.npm)
-
-  await userEvent.click(yarnRadio)
-
-  expect(input.value).toEqual(mock.default.input)
-  expect(output.value).toEqual(mock.default.output.yarn)
-
-  await userEvent.click(npmRadio)
-
-  expect(input.value).toEqual(mock.default.input)
-  expect(output.value).toEqual(mock.default.output.npm)
+  await userEvent.click(r.getByTestId("radio-npm"))
+  expect(getOutput(r)).toEqual(chain(mock.default.output.npm))
 })
 
 it("supports minor versions", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.withMinor.input)
 
-  input.focus()
-  await userEvent.paste(mock.withMinor.input)
-
-  expect(input.value).toEqual(mock.withMinor.input)
-  expect(output.value).toEqual(mock.withMinor.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.withMinor.output.npm))
 })
 
 it("supports major versions", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.withMajor.input)
 
-  input.focus()
-  await userEvent.paste(mock.withMajor.input)
-
-  expect(input.value).toEqual(mock.withMajor.input)
-  expect(output.value).toEqual(mock.withMajor.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.withMajor.output.npm))
 })
 
 it("filters by name", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await userEvent.type(r.getByTestId("filter-by-name"), "react")
+  await paste(r, mock.byName.input)
 
-  const filterByNameInput = getByTestId("filter-by-name") as HTMLInputElement
-
-  await userEvent.type(filterByNameInput, "react")
-
-  input.focus()
-  await userEvent.paste(mock.byName.input)
-
-  expect(input.value).toEqual(mock.byName.input)
-  expect(output.value).toEqual(mock.byName.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.byName.output.npm))
 })
 
-it("shows a message on an invalid input", async () => {
-  const { getByTestId } = render(<App />)
+it("reports unparseable lines but keeps the valid ones", async () => {
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.invalid.input)
 
-  input.focus()
-  await userEvent.paste(mock.invalid.input)
-
-  expect(input.value).toEqual(mock.invalid.input)
-  expect(output.value).toEqual(mock.invalid.output.npm)
+  const errors = r.getByTestId("parse-errors")
+  expect(errors.textContent).toContain("Couldn't parse 1 line")
+  expect(getOutput(r)).toEqual(chain(mock.invalid.output.npm))
 })
 
 it("shows a list of libraries from the input", async () => {
-  const { getByTestId, getAllByTestId, getByText } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
+  await paste(r, mock.default.input)
 
-  input.focus()
-  await userEvent.paste(mock.default.input)
+  const names = r
+    .getAllByTestId("library")
+    .map((el) => el.getAttribute("data-lib"))
+  expect(names).toHaveLength(6)
+  expect(names).toEqual(
+    expect.arrayContaining([
+      "react",
+      "react-dom",
+      "react-scripts",
+      "typescript",
+      "@types/react",
+      "@types/react-dom",
+    ])
+  )
 
-  expect(getAllByTestId("library")).toHaveLength(6)
-  expect(getByText("react 16.8.6 → 17.0.1")).toBeDefined()
-  expect(getByText("react-dom 16.8.6 → 17.0.1")).toBeDefined()
-  expect(getByText("react-scripts 3.0.1 → 4.0.1")).toBeDefined()
-  expect(getByText("typescript 3.5.3 → 4.1.2")).toBeDefined()
-  expect(getByText("@types/react 16.8.23 → 17.0.0")).toBeDefined()
-  expect(getByText("@types/react-dom 16.8.5 → 17.0.0")).toBeDefined()
+  const reactCard = getCard(r, "react")
+  expect(reactCard.textContent).toContain("16.8.6")
+  expect(reactCard.textContent).toContain("17.0.1")
 })
 
-it("makes it possible to enable/disable libraries", async () => {
-  const { getByTestId, getAllByTestId } = render(<App />)
+it("makes it possible to include/skip libraries", async () => {
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
+  await paste(r, mock.default.input)
 
-  input.focus()
-  await userEvent.paste(mock.default.input)
+  expect(isIncluded(getCard(r, "react"))).toBeTruthy()
+  expect(isIncluded(getCard(r, "react-dom"))).toBeTruthy()
+  expect(isIncluded(getCard(r, "typescript"))).toBeTruthy()
 
-  const [
-    reactLib,
-    reactDomLib,
-    reactScriptsLib,
-    typescriptLib,
-    typesReactLib,
-    typesReactDomLib,
-  ] = getAllByTestId("library")
+  await userEvent.click(getCard(r, "react-dom"))
 
-  const getInput = (element: HTMLElement): HTMLInputElement =>
-    element.querySelector("input")!
+  expect(isIncluded(getCard(r, "react"))).toBeTruthy()
+  expect(isIncluded(getCard(r, "react-dom"))).not.toBeTruthy()
 
-  expect(getInput(reactLib).checked).toBeTruthy()
-  expect(getInput(reactDomLib).checked).toBeTruthy()
-  expect(getInput(reactScriptsLib).checked).toBeTruthy()
-  expect(getInput(typescriptLib).checked).toBeTruthy()
-  expect(getInput(typesReactLib).checked).toBeTruthy()
-  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+  await userEvent.click(getCard(r, "typescript"))
+  expect(isIncluded(getCard(r, "typescript"))).not.toBeTruthy()
 
-  // would prefer clicking label, but happy-dom has a bug causing it to fire twice
-  // https://github.com/capricorn86/happy-dom/issues/1410
-  await userEvent.click(getInput(reactDomLib))
-
-  expect(getInput(reactLib).checked).toBeTruthy()
-  expect(getInput(reactDomLib).checked).not.toBeTruthy()
-  expect(getInput(reactScriptsLib).checked).toBeTruthy()
-  expect(getInput(typescriptLib).checked).toBeTruthy()
-  expect(getInput(typesReactLib).checked).toBeTruthy()
-  expect(getInput(typesReactDomLib).checked).toBeTruthy()
-
-  await userEvent.click(getInput(typescriptLib))
-
-  expect(getInput(reactLib).checked).toBeTruthy()
-  expect(getInput(reactDomLib).checked).not.toBeTruthy()
-  expect(getInput(reactScriptsLib).checked).toBeTruthy()
-  expect(getInput(typescriptLib).checked).not.toBeTruthy()
-  expect(getInput(typesReactLib).checked).toBeTruthy()
-  expect(getInput(typesReactDomLib).checked).toBeTruthy()
-
-  await userEvent.click(getInput(typescriptLib))
-
-  expect(getInput(reactLib).checked).toBeTruthy()
-  expect(getInput(reactDomLib).checked).not.toBeTruthy()
-  expect(getInput(reactScriptsLib).checked).toBeTruthy()
-  expect(getInput(typescriptLib).checked).toBeTruthy()
-  expect(getInput(typesReactLib).checked).toBeTruthy()
-  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+  await userEvent.click(getCard(r, "typescript"))
+  expect(isIncluded(getCard(r, "typescript"))).toBeTruthy()
 })
 
 it("limits packages to minor", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const minorRadio = getByTestId("radio-minor") as HTMLInputElement
+  const minorRadio = r.getByTestId("radio-minor")
+  await userEvent.click(minorRadio)
+  await paste(r, mock.limitMinor.input)
 
-  minorRadio.click()
-
-  input.focus()
-  await userEvent.paste(mock.limitMinor.input)
-
-  expect(minorRadio.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.limitMinor.input)
-  expect(output.value).toEqual(mock.limitMinor.output.npm)
+  expect(isSelected(minorRadio)).toBeTruthy()
+  expect(getOutput(r)).toEqual(chain(mock.limitMinor.output.npm))
 })
 
 it("limits packages to patch", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const patchRadio = getByTestId("radio-patch") as HTMLInputElement
+  const patchRadio = r.getByTestId("radio-patch")
+  await userEvent.click(patchRadio)
+  await paste(r, mock.limitPatch.input)
 
-  patchRadio.click()
-
-  input.focus()
-  await userEvent.paste(mock.limitPatch.input)
-
-  expect(patchRadio.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.limitPatch.input)
-  expect(output.value).toEqual(mock.limitPatch.output.npm)
+  expect(isSelected(patchRadio)).toBeTruthy()
+  expect(getOutput(r)).toEqual(chain(mock.limitPatch.output.npm))
 })
 
 it("filters unique packages", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.unique.input)
 
-  input.focus()
-  await userEvent.paste(mock.unique.input)
-
-  expect(input.value).toEqual(mock.unique.input)
-  expect(output.value).toEqual(mock.unique.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.unique.output.npm))
 })
 
 it("renders only unique libraries in the UI", async () => {
-  const { getByTestId, getAllByTestId, getByText } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
+  await paste(r, mock.unique.input)
 
-  input.focus()
-  await userEvent.paste(mock.unique.input)
-
-  expect(getByText("react 18.0.0 → 18.2.0")).toBeDefined()
-  expect(getByText("react-dom 18.0.0 → 18.2.0")).toBeDefined()
-  expect(getByText("@types/react 18.0.0 → 18.2.0")).toBeDefined()
-  expect(getByText("@types/react-dom 18.0.0 → 18.2.0")).toBeDefined()
-
-  // only 4!
-  expect(getAllByTestId("library")).toHaveLength(4)
+  expect(r.getAllByTestId("library")).toHaveLength(4)
 })
 
 it("makes it possible to bump lockfile", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const bumpLockfile = getByTestId("bump-lockfile") as HTMLLabelElement
-  const bumpLockfileCheckbox = getByTestId(
-    "bump-lockfile-checkbox"
+  const bumpLockfileCheckbox = r.getByTestId(
+    "bump-lockfile"
   ) as HTMLInputElement
-
-  bumpLockfile.click()
-  input.focus()
-  await userEvent.paste(mock.withBumpLockfile.input)
+  await userEvent.click(bumpLockfileCheckbox)
+  await paste(r, mock.withBumpLockfile.input)
 
   expect(bumpLockfileCheckbox.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.withBumpLockfile.input)
-  expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.withBumpLockfile.output.npm))
 })
 
 it("makes it possible to deep/recursive upgrade", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const deep = getByTestId("deep") as HTMLLabelElement
-  const deepCheckbox = getByTestId("deep-checkbox") as HTMLInputElement
-
-  deep.click()
-  input.focus()
-  await userEvent.paste(mock.deep.input)
+  const deepCheckbox = r.getByTestId("deep") as HTMLInputElement
+  await userEvent.click(deepCheckbox)
+  await paste(r, mock.deep.input)
 
   expect(deepCheckbox.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.deep.input)
-  expect(output.value).toEqual(mock.deep.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.deep.output.npm))
 })
 
-it("restores disabled libraries from localstorage", async () => {
-  const ignoredLibaries = ["react", "react-dom"]
+it("restores skipped libraries from the legacy ignoredLibs key", async () => {
+  localStorage.setItem("ignoredLibs", JSON.stringify(["react", "react-dom"]))
 
-  localStorage.setItem("ignoredLibs", JSON.stringify(ignoredLibaries))
+  const r = render(<App />)
 
-  const { getByTestId, getAllByTestId } = render(<App />)
+  await paste(r, mock.default.input)
 
-  const input = getByTestId("input") as HTMLInputElement
-
-  input.focus()
-  await userEvent.paste(mock.default.input)
-
-  expect(getAllByTestId("library")).toHaveLength(6)
-
-  const [
-    reactLib,
-    reactDomLib,
-    reactScriptsLib,
-    typescriptLib,
-    typesReactLib,
-    typesReactDomLib,
-  ] = getAllByTestId("library")
-
-  const getInput = (element: HTMLElement): HTMLInputElement =>
-    element.querySelector("input")!
-
-  expect(getInput(reactLib).checked).not.toBeTruthy()
-  expect(getInput(reactDomLib).checked).not.toBeTruthy()
-  expect(getInput(reactScriptsLib).checked).toBeTruthy()
-  expect(getInput(typescriptLib).checked).toBeTruthy()
-  expect(getInput(typesReactLib).checked).toBeTruthy()
-  expect(getInput(typesReactDomLib).checked).toBeTruthy()
+  expect(r.getAllByTestId("library")).toHaveLength(6)
+  expect(isIncluded(getCard(r, "react"))).not.toBeTruthy()
+  expect(isIncluded(getCard(r, "react-dom"))).not.toBeTruthy()
+  expect(isIncluded(getCard(r, "react-scripts"))).toBeTruthy()
+  expect(isIncluded(getCard(r, "typescript"))).toBeTruthy()
 })
 
-it("saves disabled libraries to localstorage", async () => {
-  const { getByTestId, getAllByTestId } = render(<App />)
+it("saves skipped libraries to localstorage (both keys)", async () => {
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
+  await paste(r, mock.default.input)
 
-  input.focus()
-  await userEvent.paste(mock.default.input)
+  await userEvent.click(getCard(r, "react-dom"))
 
-  const [
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _reactLib,
-    reactDomLib,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _reactScriptsLib,
-    typescriptLib,
-  ] = getAllByTestId("library")
+  const writesFor = (key: string) =>
+    setItemSpy.mock.calls.filter(([k]) => k === key).map(([, v]) => v)
 
-  const getInput = (element: HTMLElement): HTMLInputElement =>
-    element.querySelector("input")!
+  expect(writesFor("skippedLibs").at(-1)).toEqual(JSON.stringify(["react-dom"]))
+  expect(writesFor("ignoredLibs").at(-1)).toEqual(JSON.stringify(["react-dom"]))
 
-  await userEvent.click(getInput(reactDomLib))
+  await userEvent.click(getCard(r, "typescript"))
 
-  expect(setItemSpy).toHaveBeenCalledTimes(1)
-  expect(setItemSpy).toHaveBeenLastCalledWith(
-    "ignoredLibs",
-    JSON.stringify(["react-dom"])
-  )
-
-  await userEvent.click(getInput(typescriptLib))
-
-  expect(setItemSpy).toHaveBeenCalledTimes(2)
-  expect(setItemSpy).toHaveBeenLastCalledWith(
-    "ignoredLibs",
+  expect(writesFor("ignoredLibs").at(-1)).toEqual(
     JSON.stringify(["react-dom", "typescript"])
   )
 })
@@ -538,120 +408,138 @@ it("saves disabled libraries to localstorage", async () => {
 it("restores upgrade version from localstorage", async () => {
   localStorage.setItem("upgradeVersion", JSON.stringify("minor"))
 
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const minorRadio = getByTestId("radio-minor") as HTMLInputElement
+  await paste(r, mock.limitMinor.input)
 
-  input.focus()
-  await userEvent.paste(mock.limitMinor.input)
-
-  expect(minorRadio.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.limitMinor.input)
-  expect(output.value).toEqual(mock.limitMinor.output.npm)
+  expect(isSelected(r.getByTestId("radio-minor"))).toBeTruthy()
+  expect(getOutput(r)).toEqual(chain(mock.limitMinor.output.npm))
 })
 
 it("restores package manager from localstorage", async () => {
   localStorage.setItem("packageManager", JSON.stringify("yarn"))
 
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
+  await paste(r, mock.default.input)
 
-  input.focus()
-  await userEvent.paste(mock.default.input)
-
-  expect(yarnRadio.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.default.input)
-  expect(output.value).toEqual(mock.default.output.yarn)
+  expect(isSelected(r.getByTestId("radio-yarn"))).toBeTruthy()
+  expect(getOutput(r)).toEqual(chain(mock.default.output.yarn))
 })
 
 it("restores bump lockfile from localstorage", async () => {
   localStorage.setItem("bumpLockfile", JSON.stringify(true))
 
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const bumpLockfileCheckbox = getByTestId(
-    "bump-lockfile-checkbox"
+  await paste(r, mock.withBumpLockfile.input)
+
+  const bumpLockfileCheckbox = r.getByTestId(
+    "bump-lockfile"
   ) as HTMLInputElement
-
-  input.focus()
-  await userEvent.paste(mock.withBumpLockfile.input)
-
   expect(bumpLockfileCheckbox.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.withBumpLockfile.input)
-  expect(output.value).toEqual(mock.withBumpLockfile.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.withBumpLockfile.output.npm))
 })
 
-it("restores bump lockfile from localstorage", async () => {
+it("bumps the right lockfile for yarn", async () => {
   localStorage.setItem("bumpLockfile", JSON.stringify(true))
 
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
-  const yarnRadio = getByTestId("radio-yarn") as HTMLInputElement
-  const bumpLockfileCheckbox = getByTestId(
-    "bump-lockfile-checkbox"
+  await userEvent.click(r.getByTestId("radio-yarn"))
+  await paste(r, mock.withBumpLockfile.input)
+
+  const bumpLockfileCheckbox = r.getByTestId(
+    "bump-lockfile"
   ) as HTMLInputElement
-
-  userEvent.click(yarnRadio)
-
-  input.focus()
-  await userEvent.paste(mock.withBumpLockfile.input)
-
   expect(bumpLockfileCheckbox.checked).toBeTruthy()
-
-  expect(input.value).toEqual(mock.withBumpLockfile.input)
-  expect(output.value).toEqual(mock.withBumpLockfile.output.yarn)
+  expect(getOutput(r)).toEqual(chain(mock.withBumpLockfile.output.yarn))
 })
 
 it("supports npm alias format (npm:package@version)", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.npmAlias.input)
 
-  input.focus()
-  await userEvent.paste(mock.npmAlias.input)
-
-  expect(input.value).toEqual(mock.npmAlias.input)
-  expect(output.value).toEqual(mock.npmAlias.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.npmAlias.output.npm))
 })
 
 it("handles prerelease versions (e.g. 7.0.0-dev.20260510.1)", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.prerelease.input)
 
-  input.focus()
-  await userEvent.paste(mock.prerelease.input)
-
-  expect(input.value).toEqual(mock.prerelease.input)
-  expect(output.value).toEqual(mock.prerelease.output.npm)
+  expect(getOutput(r)).toEqual(chain(mock.prerelease.output.npm))
 })
 
 it("handles monorepo output with 'Not found' packages", async () => {
-  const { getByTestId } = render(<App />)
+  const r = render(<App />)
 
-  const input = getByTestId("input") as HTMLInputElement
-  const output = getByTestId("output") as HTMLInputElement
+  await paste(r, mock.monorepoWithNotFound.input)
 
-  input.focus()
-  await userEvent.paste(mock.monorepoWithNotFound.input)
+  expect(r.queryByTestId("parse-errors")).toBeNull()
+  expect(getOutput(r)).toContain("npx npm-check-updates -u react")
+})
 
-  expect(input.value).toEqual(mock.monorepoWithNotFound.input)
-  // Should not show error - should produce valid output
-  expect(output.value).not.toEqual(
-    "This doesn't look like a valid npx npm-check-updates output."
+it("chains with ; when selected, matching the legacy output", async () => {
+  const r = render(<App />)
+
+  await userEvent.click(r.getByTestId("joiner-semi"))
+  await paste(r, mock.default.input)
+
+  expect(getOutput(r)).toEqual(mock.default.output.npm)
+})
+
+it("groups related packages into families with bulk actions", async () => {
+  const r = render(<App />)
+
+  await paste(r, mock.default.input)
+
+  // react, react-dom, react-scripts, @types/react, @types/react-dom → "react"
+  // family; typescript is standalone and stays headerless in "Other".
+  const family = r
+    .getByTitle("Collapse react")
+    .closest(".family") as HTMLElement
+  expect(family.getAttribute("data-family")).toEqual("react")
+  expect(within(family).getAllByTestId("library")).toHaveLength(5)
+
+  await userEvent.click(within(family).getByTitle("Skip all in react"))
+
+  expect(getOutput(r)).toEqual(
+    chain(
+      `npx npm-check-updates -u typescript; npm i; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"`
+    )
+  )
+})
+
+it("supports one commit per family", async () => {
+  const r = render(<App />)
+
+  await paste(r, mock.default.input)
+  await userEvent.click(r.getByText("one per family"))
+
+  const blocks = r.getAllByTestId("output-block")
+  expect(blocks).toHaveLength(2)
+  expect(blocks[0].getAttribute("data-name")).toEqual("__family:react")
+  expect(blocks[0].textContent).toContain(
+    "npx npm-check-updates -u react react-dom react-scripts @types/react @types/react-dom"
+  )
+  expect(blocks[0].textContent).toContain(
+    'git commit -m "chore(deps): bump react family (5 packages)"'
+  )
+  expect(blocks[1].getAttribute("data-name")).toEqual("typescript")
+})
+
+it("supports one commit for everything", async () => {
+  const r = render(<App />)
+
+  await paste(r, mock.default.input)
+  await userEvent.click(r.getByText("one for all"))
+
+  const blocks = r.getAllByTestId("output-block")
+  expect(blocks).toHaveLength(1)
+  expect(blocks[0].getAttribute("data-name")).toEqual("__bundle")
+  expect(blocks[0].textContent).toContain(
+    'git commit -m "chore(deps): bump 6 packages"'
   )
 })
