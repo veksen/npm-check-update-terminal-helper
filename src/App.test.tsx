@@ -147,6 +147,47 @@ const mock = {
  @query-doctor/pglite  Not found`,
   },
 
+  groupedFormat: {
+    input: `Checking /Users/veksen/Work/query-doctor/Site/package.json
+
+Patch   Backwards-compatible bug fixes
+ turbo  ^2.10.6  →  ^2.10.7
+
+Minor   Backwards-compatible features
+ oxlint  ^1.70.0  →  ^1.76.0
+ vite     ^8.1.5  →   ^8.2.0
+
+Major   Potentially breaking API changes
+ npm         11.13.0  →  12.0.2
+ typescript   ^5.6.3  →  ^7.0.2
+
+Major version zero   Anything may change
+ @tsdown/css  0.22.13  →  0.22.14
+
+Run npx npm-check-updates --deep -u to upgrade package.json
+
+Checking /Users/veksen/Work/query-doctor/Site/apps/blog/package.json
+
+ @query-doctor/pglite  Not found
+
+Run npx npm-check-updates --deep -u to upgrade apps/blog/package.json`,
+    libraries: [
+      "turbo 2.10.6 → 2.10.7",
+      "oxlint 1.70.0 → 1.76.0",
+      "vite 8.1.5 → 8.2.0",
+      "npm 11.13.0 → 12.0.2",
+      "typescript 5.6.3 → 7.0.2",
+      "@tsdown/css 0.22.13 → 0.22.14",
+    ],
+  },
+
+  gibberish: {
+    input: `On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean`,
+  },
+
   prerelease: {
     input: ` @typescript/native-preview  7.0.0-dev.20260510.1  →  7.0.0-dev.20260511.1
  vitest                                    ^4.1.5  →                ^4.1.6`,
@@ -638,6 +679,41 @@ it("handles prerelease versions (e.g. 7.0.0-dev.20260510.1)", async () => {
 
   expect(input.value).toEqual(mock.prerelease.input)
   expect(output.value).toEqual(mock.prerelease.output.npm)
+})
+
+it("handles the grouped output format (ncu --format group)", async () => {
+  const { getByTestId, getAllByTestId, getByText } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.groupedFormat.input)
+
+  expect(output.value).not.toEqual(
+    "This doesn't look like a valid npx npm-check-updates output."
+  )
+
+  expect(getAllByTestId("library")).toHaveLength(
+    mock.groupedFormat.libraries.length
+  )
+  mock.groupedFormat.libraries.forEach((library) => {
+    expect(getByText(library)).toBeDefined()
+  })
+})
+
+it("shows a message on input that is not ncu output at all", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(mock.gibberish.input)
+
+  expect(output.value).toEqual(
+    "This doesn't look like a valid npx npm-check-updates output."
+  )
 })
 
 it("handles monorepo output with 'Not found' packages", async () => {

@@ -125,21 +125,39 @@ function App() {
     return Array.from(uniqueLibraries.values())
   }
 
+  // ncu wraps the upgrade table in informational lines: the package.json being
+  // checked, group headings ("Patch   Backwards-compatible bug fixes"), packages
+  // it could not resolve, and the closing hint. Only upgrades carry the arrow.
+  const isUpgrade = (line: string): boolean => line.includes("→")
+
+  // Markers that identify the paste as ncu output even when it lists no upgrade.
+  const isNcuNotice = (line: string): boolean =>
+    [
+      "Checking ",
+      "Run npx npm-check-updates ",
+      "All dependencies match",
+      "No dependencies.",
+      "Not found",
+    ].some((marker) => line.includes(marker))
+
   const parseLibraries = (str: string): Library[] => {
-    if (!str) return []
+    if (!str.trim()) return []
 
     let output: Library[] = []
 
     try {
-      output = str
+      const lines = str
         .split(/\n/)
         .map((line) => line.trim())
-        .filter((line) => !line.startsWith("Run npx npm-check-updates "))
-        .filter((line) => !line.includes("Checking "))
-        .filter((line) => !line.includes("All dependencies match"))
-        .filter((line) => !line.includes("No dependencies."))
-        .filter((line) => !line.includes("Not found"))
         .filter(Boolean)
+
+      const upgrades = lines.filter(isUpgrade)
+
+      if (!upgrades.length && !lines.some(isNcuNotice)) {
+        throw Error("invalid output")
+      }
+
+      output = upgrades
         .map((line): Library => {
           const [name, versionFrom, , versionTo] = line.split(/ +/)
           return {
