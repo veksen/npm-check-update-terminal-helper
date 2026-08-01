@@ -43,6 +43,19 @@ const mock = {
     },
   },
 
+  force: {
+    input: ` react              ^16.8.6  →  ^17.0.1
+    react-dom          ^16.8.6  →  ^17.0.1
+    react-scripts        3.0.1  →    4.0.1
+    typescript          ^3.5.3  →   ^4.1.2
+    @types/react      ^16.8.23  →  ^17.0.0
+    @types/react-dom   ^16.8.5  →  ^17.0.0`,
+    output: {
+      npm: `npx npm-check-updates -u react; npm i --force; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; npm i --force; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; npm i --force; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; npm i --force; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react; npm i --force; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; npm i --force; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
+      yarn: `npx npm-check-updates -u react; yarn --force; git add -A; git commit -m "chore(deps): bump react to 17.0.1"; npx npm-check-updates -u react-dom; yarn --force; git add -A; git commit -m "chore(deps): bump react-dom to 17.0.1"; npx npm-check-updates -u react-scripts; yarn --force; git add -A; git commit -m "chore(deps): bump react-scripts to 4.0.1"; npx npm-check-updates -u typescript; yarn --force; git add -A; git commit -m "chore(deps): bump typescript to 4.1.2"; npx npm-check-updates -u @types/react; yarn --force; git add -A; git commit -m "chore(deps): bump @types/react to 17.0.0"; npx npm-check-updates -u @types/react-dom; yarn --force; git add -A; git commit -m "chore(deps): bump @types/react-dom to 17.0.0"`,
+    },
+  },
+
   withMinor: {
     input: ` react              ^16.8.6  →  ^17.0.1
     react-dom          ^16.8.6  →  ^17.0.1
@@ -503,6 +516,24 @@ it("makes it possible to deep/recursive upgrade", async () => {
 
   expect(input.value).toEqual(mock.deep.input)
   expect(output.value).toEqual(mock.deep.output.npm)
+})
+
+it("makes it possible to force the install", async () => {
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+  const force = getByTestId("force") as HTMLLabelElement
+  const forceCheckbox = getByTestId("force-checkbox") as HTMLInputElement
+
+  force.click()
+  input.focus()
+  await userEvent.paste(mock.force.input)
+
+  expect(forceCheckbox.checked).toBeTruthy()
+
+  expect(input.value).toEqual(mock.force.input)
+  expect(output.value).toEqual(mock.force.output.npm)
 })
 
 it("restores disabled libraries from localstorage", async () => {
