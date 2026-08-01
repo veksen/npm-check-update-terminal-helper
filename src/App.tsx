@@ -48,6 +48,7 @@ function App() {
     false
   )
   const [deep, setDeep] = useLocalStorage<boolean>("deep", false)
+  const [force, setForce] = useLocalStorage<boolean>("force", false)
 
   useEffect(() => {
     if (!input.trim()) {
@@ -190,7 +191,12 @@ function App() {
       return ""
     }
 
-    const install = packageManager === "npm" ? "npm i" : "yarn"
+    const install = [
+      packageManager === "npm" ? "npm i" : "yarn",
+      force ? "--force" : "",
+    ]
+      .join(" ")
+      .trim()
     const lockfile =
       packageManager === "npm" ? "package-lock.json" : "yarn.lock"
 
@@ -205,9 +211,14 @@ function App() {
         deep ? "--deep" : "",
       ].join(" ")
 
+      const installCommand = [
+        packageManager === "npm" ? "npm i" : "yarn",
+        force ? "--force" : "",
+      ].join(" ")
+
       const command = [
         ncuCommand,
-        packageManager === "npm" ? "npm i" : "yarn",
+        installCommand,
         `git add -A`,
         `git commit -m "chore(deps): bump ${name} to ${to}"`,
       ]
@@ -357,6 +368,23 @@ function App() {
             onChange={() => setDeep((prevValue) => !prevValue)}
           >
             --deep
+          </Option>
+
+          <div
+            className="section-title cursor-help"
+            title={`Forces the install through peer dependency conflicts. Will run ${
+              packageManager === "npm" ? "npm i" : "yarn"
+            } --force.`}
+          >
+            Force install [?]
+          </div>
+          <Option
+            data-testid="force"
+            value="force"
+            checked={force}
+            onChange={() => setForce((prevValue) => !prevValue)}
+          >
+            --force
           </Option>
         </div>
 
