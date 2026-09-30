@@ -102,13 +102,23 @@ function App() {
     return !ignoredLibs.includes(library.name)
   }
 
+  // ncu prints ranges like "^0.19" as-is, but semver only diffs full versions.
+  const toFullVersion = (version: string): string =>
+    version.replace(
+      /^(\d+)(?:\.(\d+))?(?:\.(\d+))?/,
+      (_, major, minor = "0", patch = "0") => `${major}.${minor}.${patch}`
+    )
+
+  const versionDiff = (library: Library) =>
+    semverDiff(toFullVersion(library.from), toFullVersion(library.to))
+
   const atMostMinor = (library: Library): boolean => {
-    const diff = semverDiff(library.from, library.to)
+    const diff = versionDiff(library)
     return diff === "minor" || diff === "patch"
   }
 
   const atMostPatch = (library: Library): boolean => {
-    const diff = semverDiff(library.from, library.to)
+    const diff = versionDiff(library)
     return diff === "patch"
   }
 
