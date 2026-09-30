@@ -762,3 +762,20 @@ it("handles monorepo output with 'Not found' packages", async () => {
     "This doesn't look like a valid npx npm-check-updates output."
   )
 })
+
+it("handles two-part versions (e.g. ^0.19) when limiting versions", async () => {
+  localStorage.setItem("upgradeVersion", JSON.stringify("minor"))
+
+  const { getByTestId } = render(<App />)
+
+  const input = getByTestId("input") as HTMLInputElement
+  const output = getByTestId("output") as HTMLInputElement
+
+  input.focus()
+  await userEvent.paste(` esbuild              ^0.27.3  →  ^0.28.2
+ prettier-plugin-sql    ^0.19  →    ^0.20`)
+
+  expect(output.value).toEqual(
+    `npx npm-check-updates -u esbuild; npm i; git add -A; git commit -m "chore(deps): bump esbuild to 0.28.2"; npx npm-check-updates -u prettier-plugin-sql; npm i; git add -A; git commit -m "chore(deps): bump prettier-plugin-sql to 0.20"`
+  )
+})
